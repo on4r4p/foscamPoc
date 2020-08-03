@@ -1,0 +1,29 @@
+Suitable for MJPG indoor PT camera: FI8910W FI8910E FI8916W FI8918W FI8918E Pan/Tilt network camera.
+
+Please confirm the model number and firmware version before upgrading.
+11.22.2.xx can upgrade to this version,11.37.2.xx cannot upgrade to this version.
+
+System firmware version: 11.22.2.47
+Web UI version: 2.4.10.2
+
+New features:
+1) Big Change on UI;
+2) Add Foscam DDNS (For cameras that support it in default factory settings);
+3) Support sound alarm;
+4) Support enable or disable record when alarm;
+5) Make the wireless key invisible and improve the security;
+6) Support full screen view in multi-device mode;
+7) Support changing the name of manual record file,changed the record path settings;
+8) Multi-Camera share the same record, snapshot, play, stop, audio or talk buttons;
+9) Support mobile phone access via browser directly; (The browser on phone need support JavaScript);
+10) Support Point to Point wireless connection;
+11) Enable UPNP in default factory settings;
+12) Support Portuguese languages on UI.
+
+Fixed bugs:
+1) Fixed the bug that wireless signal need scan two times;
+2) Changed some translation and pop-up information;
+3) Fixed the issue that wireless SSID and MAC address don't match some time;
+4) Fixed the invalid test problem of FTP settings;
+5) Fixed invalid alarm schedule settings problem.
+

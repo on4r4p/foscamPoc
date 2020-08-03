@@ -1,0 +1,56 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="style.css" type="text/css">
+<title></title>
+<style>
+BODY {
+	MARGIN: 0px; BACKGROUND-COLOR: #848284;  font: arial;
+}
+</style>
+</head>
+<script language="javascript">
+    document.write('<script src="get_params.cgi?user='+top.user+'&pwd='+top.pwd+'"><\/script>');
+</script>
+<script>
+if (alias=='') alias=top.str_anonymous;
+top.alias=alias;
+top.document.title=top.str_device+'('+alias+')';
+function upload_enable_onclick()
+{
+	tr_interval.style.display=upload_enable.checked?'':'none';
+}
+function body_onload()
+{
+	svr.value=ftp_svr;
+	port_inp.value=(!ftp_port)?21:ftp_port;
+	user.value=ftp_user;
+	pwd.value=ftp_pwd;
+	mode_sel.selectedIndex=ftp_mode;
+	dir.value=ftp_dir;
+	interval.value=ftp_upload_interval;
+	upload_enable.checked=(!ftp_upload_interval)?false:true;
+	upload_enable_onclick();
+}
+function set_ftp()
+{
+	url='set_ftp.cgi?next_url=ftp.htm&svr='+svr.value+'&port='+((port_inp.value=='')?21:port_inp.value)+'&user='+user.value+'&pwd='+pwd.value+'&dir='+dir.value+'&mode='+mode_sel.selectedIndex+'&upload_interval='+((upload_enable.checked&&(interval.value!=''))?interval.value:0);
+	location=url;
+}
+</script>	
+<body onLoad="body_onload()">
+<table width="640" height="480" ><tr><td class="v1 pad2 bc4"><table width="100%" class="v2 f14 mid01">
+	<tr height="25"><td colspan="2" class="h2 bc1 mid02"><strong><script>document.write(top.str_ftp_config);</script></strong></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_ftp_svr);</script></td><td class="mid02">&nbsp;&nbsp;<input id="svr" maxlength="64"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ftp_port);</script></td><td class="mid02">&nbsp;&nbsp;<input id="port_inp" maxlength="5" onKeyUp="value=value.replace(/[^\d]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ftp_user);</script></td><td class="mid02">&nbsp;&nbsp;<input id="user" maxlength="64"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ftp_pwd);</script></td><td class="mid02">&nbsp;&nbsp;<input id="pwd" type="password" maxlength="64"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ftp_dir);</script></td><td class="mid02">&nbsp;&nbsp;<input id="dir" maxlength="64"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ftp_mode);</script></td><td class="mid02">&nbsp;&nbsp;<select id="mode_sel"><option>PORT</option><option>PASV</option></select></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;</td><td class="v2 f13 mid02">&nbsp;&nbsp;<button onClick="window.open('test_ftp.htm').focus()"><script>document.write(top.str_test);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<script>document.write(top.str_test_info);</script></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ftp_upload_enable);</script></td><td class="mid02">&nbsp;&nbsp;<input type="checkbox" id="upload_enable" onClick="upload_enable_onclick()"></td></tr>
+	<tr id="tr_interval" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ftp_upload_interval);</script></td><td class="mid02">&nbsp;&nbsp;<input id="interval" maxlength="5" onKeyUp="value=value.replace(/[^\d]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))"></td></tr>
+	<tr height="25"><td class="h2 mid03" colspan="2"><button onClick="set_ftp()"><script>document.write(top.str_set);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="location.reload()"><script>document.write(top.str_refresh);</script></button></td></tr>
+</table></td></tr></table>
+</body>
+</html>

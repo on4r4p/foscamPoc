@@ -1,0 +1,2082 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>a{color:000000;TEXT-DECORATION:none}a:hover{color:FF0000;TEXT-DECORATION:underline}</style>
+<style>
+BODY {
+	MARGIN: 0px; BACKGROUND-COLOR: #848284;  font: arial;
+}
+
+.mid01{border-top-width:1px; border-top-style:none; border-right-style:none; border-bottom-style:none; border-left-style:none; border-top-color:#d8d8d8; border-right-color:#d8d8d8; border-bottom-color:#d8d8d8; border-left-color:#d8d8d8; border-right-width:1px; border-bottom-width:1px; border-left-width:1px;} 
+.mid02{border-top-width:1px; border-right-width:1px; border-bottom-width:1px; border-left-width:1px;	border-top-style:none;	border-right-style:none; border-bottom-style:none; border-left-style:none; border-top-color:#205f8b; border-right-color:#205f8b; border-bottom-color:#205f8b; border-left-color:#205f8b;}
+.mid03{border-top-width:1px; border-right-width:1px; border-bottom-width:1px; border-left-width:1px;	border-top-style:none;	border-right-style:none; border-bottom-style:none; border-left-style:none; border-top-color:#205f8b; border-right-color:#205f8b; border-bottom-color:#205f8b; border-left-color:#205f8b;}
+.rect_left{border-top-width:1px; border-top-style:none; border-right-style:none; border-bottom-style:none; border-left-style:none; border-top-color:#205f8b; border-right-color:#205f8b; border-bottom-color:#205f8b; border-left-color:#205f8b; border-right-width:1px; border-bottom-width:1px; border-left-width:1px;} 
+.rect_right{border-top-width:1px; border-top-style:none; border-right-style:none; border-bottom-style:none; border-left-style:none; border-top-color:#205f8b; border-right-color:#205f8b; border-bottom-color:#205f8b; border-left-color:#205f8b; border-right-width:1px; border-bottom-width:1px; border-left-width:1px;} 
+</style>
+<title></title>
+
+</head>
+<script src="public.js"></script>	
+
+<script language="javascript">
+var record_osd=1;
+
+var current = 0;
+
+var PRI_REFUSE = 0;
+var PRI_VISITOR = 1;
+var PRI_OPERATOR = 2;
+var PRI_ADMINISTRATOR = 3;
+
+
+var R320_240 = 8;
+var R640_480 = 32;
+
+var OK = 0;							
+var ERROR_CONNECT = -1;
+var ERROR_SOCKET = -2;				
+var ERROR_TIMEOUT = -3;			
+var ERROR_VERSION = -4;
+var ERROR_CANCEL = -5;
+var ERROR_CLOSED = -6;
+var ERROR_UNKNOWN = -7;
+var ERROR_FILE = -8;
+var ERROR_PARAM = -9;				
+var ERROR_THREAD = -10;				
+var ERROR_STATUS = -11;
+var ERROR_ID = -12;
+var FAIL_USER = 1;
+var FAIL_MAXCONNS = 2;
+var FAIL_VERSION = 3;
+var FAIL_ID = 4;				
+var FAIL_PWD = 5;
+var FAIL_PRI = 6;
+var FAIL_UNSUPPORT = 7;
+
+
+var PTZ_STOP = 1;
+var TILT_UP	= 0;
+var TILT_DOWN = 2;
+var PAN_LEFT = 4;
+var PAN_RIGHT = 6;
+var PTZ_LEFT_UP = 90;
+var PTZ_RIGHT_UP = 91;
+var PTZ_LEFT_DOWN = 92;
+var PTZ_RIGHT_DOWN = 93;
+var PTZ_CENTER = 25;
+var PTZ_VPATROL = 26;
+var PTZ_VPATROL_STOP = 27;
+var PTZ_HPATROL = 28;
+var PTZ_HPATROL_STOP = 29;
+var IO_ON = 94;
+var IO_OFF = 95;
+var FILE_NO =1;
+
+
+var cameras = {};
+cameras.alias = new Array();
+cameras.host = new Array();
+cameras.port = new Array();
+cameras.user = new Array();
+cameras.pwd = new Array();
+cameras.pri = new Array();
+cameras.valid = new Array();
+cameras.restart = new Array();
+cameras.retry_times = new Array();
+cameras.alarm = new Array();
+cameras.alarm_light = new Array();
+cameras.count = 1;
+cameras.first = 0;
+cameras.pri[0] = cameras.pri[1] = cameras.pri[2] = cameras.pri[3] = 0;
+cameras.pri[4] = cameras.pri[5] = cameras.pri[6] = cameras.pri[7] = 0;
+cameras.pri[8] = 0;
+
+cameras.set_params = function(index,alias,host,port,user,pwd)	
+{
+	if ((index > 8) || (index < 0))
+		return;
+	
+	this.alias[index] = alias;
+	this.host[index] = host;
+	this.port[index] = port;
+	this.user[index] = user;
+	this.pwd[index] = pwd;
+}
+
+cameras.set_count = function(current,count)
+{
+	if(count > 9)
+		count = 9;
+	if ((count > 4) && (count < 9))
+		count = 4;
+	if (count < 1 || ((count > 1) && (count <4)))
+		count = 1;	
+		
+	this.count = count;
+	
+	if (parseInt(current) + parseInt(count) > 9)
+		this.first = 9 - count;	
+	else
+		this.first = current;
+	
+	for (i = 0;i < 9;++ i)
+		this.valid[i] = 0;
+	for (i = this.first;i < parseInt(this.first) + parseInt(this.count);++ i)
+		this.valid[i] = 1;		
+}
+
+function timer()
+{
+	for (i = 0;i < 9;++ i)
+	{
+		if (cameras.alarm[i] == 1)
+		{
+			if (cameras.alarm_light[i] == 1)
+			{
+				sound_player.controls.play();
+				device_status[i].src = red_ball.src;
+				cameras.alarm_light[i] = 0;
+			}
+			else
+			{
+				device_status[i].src = green_ball.src;
+				cameras.alarm_light[i] = 1;
+			}
+		}
+	}
+	
+	setTimeout('timer()',1000);
+}
+
+function showerror(index,msg,err)
+{
+var err_info;
+
+	switch (err)
+	{
+	case OK:
+		err_info = '';
+		break;
+	case ERROR_CONNECT:
+		err_info = top.str_err_connect;
+		break;
+	case ERROR_SOCKET:
+		err_info = top.str_err_socket;
+		break;
+	case ERROR_TIMEOUT:
+		err_info = top.str_error_timeout;
+		break;
+	case ERROR_VERSION:
+		err_info = top.str_err_version;
+		break;
+	case ERROR_CANCEL:
+		err_info = top.str_err_cancel;
+		break;
+	case ERROR_CLOSED:
+		err_info = top.str_err_closed;
+		break;
+	case ERROR_FILE:
+		err_info = top.str_err_file;
+		break;
+	case ERROR_PARAM:
+		err_info = top.str_err_param;
+		break;
+	case ERROR_THREAD:
+		err_info = top.str_err_thread;
+		break;
+	case ERROR_STATUS:
+		err_info = top.str_err_status;
+		break;
+	case ERROR_ID:
+		err_info = top.str_err_id;
+		break;
+	case FAIL_USER:
+		err_info = top.str_fail_user;
+		break;
+	case FAIL_MAXCONNS:
+		err_info = top.str_fail_maxconns;
+		break;
+	case FAIL_VERSION:
+		err_info = top.str_fail_version;
+		break;
+	case FAIL_ID:
+		err_info = top.str_fail_id;
+		break;
+	case FAIL_PWD:
+		err_info = top.str_fail_pwd;
+		break;
+	case FAIL_PRI:
+		err_info = top.str_fail_pri;
+		break;
+	case FAIL_UNSUPPORT:
+		err_info = top.str_fail_unsupport;
+		break;	
+	default:
+		err_info = top.str_err_unknown;
+		break;
+	}
+	
+	alert(cameras.alias[index] + ' : ' + msg + ' : ' + err_info);
+}
+
+function x_onclick() 
+{
+	if (x1.checked)
+	{
+		if (cameras.count == 1)
+			return;
+		cameras.set_count(current,1);
+	}	
+	else if(x4.checked)
+	{
+		if (cameras.count == 4)
+			return;
+		cameras.set_count(current,4);
+	}
+	else
+	{
+		if (cameras.count == 9)
+			return;
+		cameras.set_count(current,9);
+	}
+	for (i = 0;i < 9; ++ i)
+	{
+		if (cameras.valid[i] == 1)
+		{
+			if ((cameras.count == 1) && (ipcam[i].resolution == R640_480))
+			{
+				ipcam[i].style.width = 640;
+				ipcam[i].style.height = 480;
+			}
+			else if(cameras.count == 4)
+			{
+				ipcam[i].style.width = 320;
+				ipcam[i].style.height = 240;
+			}
+			else if(cameras.count == 9)
+			{
+				ipcam[i].style.width = 213;
+				ipcam[i].style.height = 160;
+			}
+			
+			ipcam[i].PlayVideo();
+		}
+		else
+		{
+			ipcam[i].StopVideo();
+			ipcam[i].StopRecord();
+			ipcam[i].style.width = 0;
+			ipcam[i].style.height = 0;
+		}
+	}			
+}
+
+function image_reversal_onclick()
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	if (image_reversal.checked)
+		ipcam[current].CameraFlip = ipcam[current].CameraFlip | 0x01;
+	else
+		ipcam[current].CameraFlip = ipcam[current].CameraFlip & 0x02;
+}
+
+function image_mirror_onclick()
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	if (image_mirror.checked)
+		ipcam[current].CameraFlip = ipcam[current].CameraFlip | 0x02;
+	else
+		ipcam[current].CameraFlip = ipcam[current].CameraFlip & 0x01;
+}
+function nofilePop_onmousedown()
+{
+       if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+        if(FILE_NO==1)
+        {       
+            ipcam[current].AutoDisplayAlarmRecord = false;
+            nofilePop.src = filePop_no1.src;
+            top.setcookie('filepop',1,720);
+            FILE_NO = 0;
+        }
+        else   
+        {         
+            ipcam[current].AutoDisplayAlarmRecord = true;
+            nofilePop.src = filePop_yes1.src;
+            top.setcookie('filepop',0,720);
+            FILE_NO = 1;
+        }
+}
+<!--
+function nofilePop_onmouseup()
+{
+      if (ipcam[current].MonitorStatus != 2)
+		return;
+	if(FILE_NO)
+        {
+            
+            nofilePop.src = filePop_no1.src;
+        }
+        else
+        {
+           
+            nofilePop.src = filePop_yes1.src;
+        }
+}
+//-->
+function playvideo_onclick()
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	ipcam[current].PlayVideo();
+}
+
+function playvideo_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	playvideo.src = play_down.src;
+}
+
+function playvideo_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	playvideo.src = play_up.src;
+}
+
+function stopvideo_onclick()
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	ipcam[current].StopVideo();
+}
+
+function stopvideo_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	stopvideo.src = stop_down.src;
+}
+
+function stopvideo_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	stopvideo.src = stop_up.src;
+}
+
+function snapshot_onclick()
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	var url = 'snapshot.htm';
+	var page = window.open(url,'','toolbar=no,directories=no,status=no,menubar=no,scrollbar=no,resizable=no,copyhistory=yes,width='+700+',height='+550+',left='+100+', top='+100+',screenX='+100+',screenY='+100+'');	
+	page.focus();
+}
+
+function snapshot_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	snapshot.src = snapshot_down.src;
+}
+
+function snapshot_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	snapshot.src = snapshot_up.src;
+}
+
+function record_onclick(index) 
+{
+	if ((ipcam[index].VideoStatus != 2) && (ipcam[index].AudioStatus != 2))
+		return;
+		
+	if (ipcam[index].RecordStatus == 0)
+	{
+		var ret = ipcam[index].StartRecord3();
+	}
+	else
+	{
+		ipcam[index].StopRecord();
+	}
+}
+
+function record_onmousedown(index) 
+{
+	if ((ipcam[index].VideoStatus != 2) && (ipcam[index].AudioStatus != 2))
+		return;
+	if (ipcam[index].RecordStatus != 2)
+		record[index].src = record_down.src;
+	else
+		record[index].src = stop_down_small.src;
+}
+
+function record_onmouseup(index) 
+	{
+		if ((ipcam[index].VideoStatus != 2) && (ipcam[index].AudioStatus != 2))
+			return;
+		if (ipcam[index].RecordStatus != 2)
+		{
+			record[index].src = record_up.src;
+		}
+		else
+			record[index].src = stop_up_small.src;
+	}
+
+function audio_onclick(index) 
+{
+	if (ipcam[index].MonitorStatus != 2)
+		return;
+		
+	if (ipcam[index].AudioStatus == 0)
+		ipcam[index].PlayAudio();
+	else
+		ipcam[index].StopAudio();
+}
+
+function audio_onmousedown(index) 
+{
+	if (ipcam[index].MonitorStatus != 2)
+		return;
+	if (ipcam[index].AudioStatus != 2)
+		audio[index].src = audio_down.src;
+	else
+		audio[index].src = stop_down_small.src;
+}
+
+function audio_onmouseup(index) 
+{
+	if (ipcam[index].MonitorStatus != 2)
+		return;
+	if (ipcam[index].AudioStatus != 2)
+		audio[index].src = audio_up.src;
+	else
+		audio[index].src = stop_up_small.src;
+}
+
+function talk_onclick(index) 
+{
+	if (ipcam[index].MonitorStatus != 2)
+		return;
+		
+	if (ipcam[index].TalkStatus == 0)
+		ipcam[index].StartTalk();
+	else
+		ipcam[index].StopTalk();
+}
+
+function talk_onmousedown(index) 
+{
+	if (ipcam[index].MonitorStatus != 2)
+		return;
+	if (ipcam[index].TalkStatus != 2)
+		talk[index].src = talk_down.src;
+	else
+		talk[index].src = stop_down_small.src;
+}
+
+function talk_onmouseup(index) 
+{
+	if (ipcam[index].MonitorStatus != 2)
+		return;
+	if (ipcam[index].TalkStatus != 2)
+		talk[index].src = talk_up.src;
+	else
+		talk[index].src = stop_up_small.src;
+}
+							
+function up_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	up.src = up_down.src;
+	if (ipcam[current].CameraFlip & 0x01)
+		ipcam[current].DecoderControl(TILT_DOWN);
+	else	
+		ipcam[current].DecoderControl(TILT_UP);
+}
+
+function up_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	up.src = up_up.src;
+	ipcam[current].DecoderControl(PTZ_STOP);
+}
+
+function down_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+
+	down.src = down_down.src;
+	if (ipcam[current].CameraFlip & 0x01)
+		ipcam[current].DecoderControl(TILT_UP);
+	else	
+		ipcam[current].DecoderControl(TILT_DOWN);
+}
+
+function down_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+
+	down.src = down_up.src;
+	ipcam[current].DecoderControl(PTZ_STOP);
+}
+
+function left_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	left.src = left_down.src;
+	if (ipcam[current].CameraFlip & 0x02)
+		ipcam[current].DecoderControl(PAN_RIGHT);
+	else	
+		ipcam[current].DecoderControl(PAN_LEFT);
+}
+
+function left_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	left.src = left_up.src;
+	ipcam[current].DecoderControl(PTZ_STOP);
+}
+
+function right_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+
+	right.src = right_down.src;
+	if (ipcam[current].CameraFlip & 0x02)
+		ipcam[current].DecoderControl(PAN_LEFT);
+	else	
+		ipcam[current].DecoderControl(PAN_RIGHT);
+}
+
+function right_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	right.src = right_up.src;
+	ipcam[current].DecoderControl(PTZ_STOP);
+}
+
+function leftup_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	leftup.src = leftup_down.src;
+	if ((ipcam[current].CameraFlip & 0x03) == 0x03)
+		ipcam[current].DecoderControl(PTZ_RIGHT_DOWN);
+	else if (ipcam[current].CameraFlip & 0x02)
+		ipcam[current].DecoderControl(PTZ_RIGHT_UP);
+	else if (ipcam[current].CameraFlip & 0x01)
+		ipcam[current].DecoderControl(PTZ_LEFT_DOWN);
+	else		
+		ipcam[current].DecoderControl(PTZ_LEFT_UP);
+}
+
+
+function leftup_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	leftup.src = leftup_up.src;
+	ipcam[current].DecoderControl(PTZ_STOP);
+}
+
+function rightup_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	rightup.src = rightup_down.src;
+	if ((ipcam[current].CameraFlip & 0x03) == 0x03)
+		ipcam[current].DecoderControl(PTZ_LEFT_DOWN);
+	else if (ipcam[current].CameraFlip & 0x02)
+		ipcam[current].DecoderControl(PTZ_LEFT_UP);
+	else if (ipcam[current].CameraFlip & 0x01)
+		ipcam[current].DecoderControl(PTZ_RIGHT_DOWN);
+	else		
+		ipcam[current].DecoderControl(PTZ_RIGHT_UP);
+}
+
+
+function rightup_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	rightup.src = rightup_up.src;
+	ipcam[current].DecoderControl(PTZ_STOP);
+}
+
+function leftdown_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	leftdown.src = leftdown_down.src;
+	if ((ipcam[current].CameraFlip & 0x03) == 0x03)
+		ipcam[current].DecoderControl(PTZ_RIGHT_UP);
+	else if (ipcam[current].CameraFlip & 0x02)
+		ipcam[current].DecoderControl(PTZ_RIGHT_DOWN);
+	else if (ipcam[current].CameraFlip & 0x01)
+		ipcam[current].DecoderControl(PTZ_LEFT_UP);
+	else		
+		ipcam[current].DecoderControl(PTZ_LEFT_DOWN);
+}
+
+
+function leftdown_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	leftdown.src = leftdown_up.src;
+	ipcam[current].DecoderControl(PTZ_STOP);
+}
+
+function rightdown_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	rightdown.src = rightdown_down.src;
+	if ((ipcam[current].CameraFlip & 0x03) == 0x03)
+		ipcam[current].DecoderControl(PTZ_LEFT_UP);
+	else if (ipcam[current].CameraFlip & 0x02)
+		ipcam[current].DecoderControl(PTZ_LEFT_DOWN);
+	else if (ipcam[current].CameraFlip & 0x01)
+		ipcam[current].DecoderControl(PTZ_RIGHT_UP);
+	else		
+		ipcam[current].DecoderControl(PTZ_RIGHT_DOWN);
+}
+
+
+function rightdown_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	rightdown.src = rightdown_up.src;
+	ipcam[current].DecoderControl(PTZ_STOP);
+}
+
+function center_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	gocenter.src = center_down.src;
+	ipcam[current].DecoderControl(PTZ_CENTER);
+        ipcam[current].AutoDisplayAlarmRecord = false;
+}
+
+function center_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	gocenter.src = center_up.src;
+}
+		
+function vpatrol_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+		
+	vpatrol.src = vpatrol_down.src;
+	ipcam[current].DecoderControl(PTZ_VPATROL);
+}
+
+function vpatrol_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	vpatrol.src = vpatrol_up.src;
+}
+
+function vpatrolstop_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+		
+	vpatrolstop.src = stop_down.src;
+	ipcam[current].DecoderControl(PTZ_VPATROL_STOP);
+}
+
+function vpatrolstop_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	vpatrolstop.src = stop_up.src;
+}
+
+function hpatrol_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	hpatrol.src = hpatrol_down.src;
+	ipcam[current].DecoderControl(PTZ_HPATROL);
+}
+
+function hpatrol_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	hpatrol.src = hpatrol_up.src;
+}
+
+function hpatrolstop_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	hpatrolstop.src = stop_down.src;
+	ipcam[current].DecoderControl(PTZ_HPATROL_STOP);
+}
+
+function hpatrolstop_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	hpatrolstop.src = stop_up.src;
+}
+		
+function switchon_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+		
+	switchon.src = switchon_down.src;
+	ipcam[current].DecoderControl(IO_ON);
+}
+
+function switchon_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	switchon.src = switchon_up.src;
+}
+
+function switchoff_onmousedown() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+		
+	switchoff.src = switchoff_down.src;
+	ipcam[current].DecoderControl(IO_OFF);
+}
+
+function switchoff_onmouseup() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	switchoff.src = switchoff_up.src;
+}
+
+function resolution_onchange() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+		
+	if (ipcam[current].Resolution != resolution.value)
+		ipcam[current].Resolution = resolution.value;
+}
+
+function mode_onchange() 
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+		
+	if (ipcam[current].Saturation != mode.value)
+		ipcam[current].Saturation = mode.value;
+}
+
+function MaxVideoRate_onchange()
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+		
+	if (ipcam[current].MaxVideoRate != MaxVideoRate.value)
+        {
+		ipcam[current].MaxVideoRate = MaxVideoRate.value;
+                
+        }
+           
+}
+
+function osd_onchange()
+{
+	ipcam[current].OSD = osd.selectedIndex;
+	if (current == 0)
+		top.setcookie('osd1',osd.selectedIndex,720);
+	else if (current == 1)
+		top.setcookie('osd2',osd.selectedIndex,720);
+	else if (current == 2)
+		top.setcookie('osd3',osd.selectedIndex,720);
+	else if (current == 3)
+		top.setcookie('osd4',osd.selectedIndex,720);
+	else if (current == 4)
+		top.setcookie('osd5',osd.selectedIndex,720);
+	else if (current == 5)
+		top.setcookie('osd6',osd.selectedIndex,720);
+	else if (current == 6)
+		top.setcookie('osd7',osd.selectedIndex,720);
+	else if (current == 7)
+		top.setcookie('osd8',osd.selectedIndex,720);
+	else if (current == 8)
+		top.setcookie('osd9',osd.selectedIndex,720);	
+}
+
+function record_osd_onclick()
+{
+	for (i=0;i<9;i++) ipcam[i].RecordOSD=record_osd_chk.checked?true:false;
+	top.setcookie('record_osd',record_osd_chk.checked?'true':'false',720);
+}
+
+function buffer_onchange()
+{
+	ipcam[current].BufferTime = buffer.value;
+}
+
+
+function plus_brightness()
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+		
+	if (parseInt(brightness.value) < 15)
+		ipcam[current].Brightness = (parseInt(brightness.value) + 1) * 16;
+}
+
+function minus_brightness()
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+		
+	if (parseInt(brightness.value) > 0)
+		ipcam[current].Brightness = (parseInt(brightness.value) - 1) * 16;
+}
+
+function plus_contrast()
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+		
+	if (parseInt(contrast.value) < 6)
+		ipcam[current].Contrast = parseInt(contrast.value) + 1;
+}
+
+function minus_contrast()
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+		
+	if (parseInt(contrast.value) > 0)
+		ipcam[current].Contrast = parseInt(contrast.value) - 1;
+}
+
+function set_preset()
+{
+   ipcam[current].DecoderControl(parseInt(ptz_set_preset.value));
+   
+}
+
+function go_preset()
+{
+   ipcam[current].DecoderControl(parseInt(ptz_set_preset.value)+1);
+   
+}
+
+function default_all()
+{
+	if (ipcam[current].MonitorStatus != 2)
+		return;
+	
+	resolution.selectedIndex = 0;
+	ipcam[current].Resolution = resolution.value;
+	mode.selectedIndex = 0;
+	ipcam[current].Saturation = mode.value;
+	MaxVideoRate.selectedIndex=0;
+	ipcam[current].MaxVideoRate = MaxVideoRate.value;
+	brightness.value = 6;
+	if (brightness.value != Math.round(ipcam[current].Brightness / 16))
+		ipcam[current].Brightness = brightness.value * 16;
+	contrast.value = 4;
+	if (contrast.value != ipcam[current].Contrast)
+		ipcam[current].Contrast = contrast.value;	
+}
+
+function connect_camera(index)
+{
+	if (ipcam[index].MonitorStatus != 0)
+		return;
+	if (cameras.host[index] == '')
+		return;	
+	ipcam[index].DefaultFileName = cameras.alias[index];
+	re = ipcam[index].MonitorConnect(cameras.host[index],cameras.port[index],cameras.user[index],cameras.pwd[index]);
+	if (re != OK)
+		top.showerror(index,top.str_failtoconnect,re);
+}
+
+function ipcam_OnAlarm(index,alarm) 
+{
+	cameras.alarm[index] = 1;
+	cameras.alarm_light[index] = 1;
+    device_status[index].src = red_ball.src;
+}
+
+function ipcam_OnAlarmStopped(index) 
+{
+	cameras.alarm[index] = 0;
+	cameras.alarm_light[index] = 0;
+	if (ipcam[index].MonitorStatus == 2)
+		device_status[index].src = green_ball.src;
+	else	
+		device_status[index].src = yellow_ball.src;
+}
+
+function ipcam_OnImageSizeChanged(index,width,height) 
+{
+	if ((cameras.count == 1) && (cameras.valid[index] == 1))
+	{
+		ipcam[index].style.width = width;
+		ipcam[index].style.height = height;
+	}	
+}
+
+function ipcam_OnMonitorConnectResult(index,result,pri) 
+{
+	if (result != OK)
+	{
+		device_status[index].src = yellow_ball.src;
+		
+		if (cameras.retry_times[index] == 0)
+		{
+			top.showerror(index,top.str_failtoconnect,result);
+			if (index == 0)
+				location.href = 'login.htm';
+		}
+		else
+		{
+			cameras.retry_times[index] --;
+			if (index == 0)
+				setTimeout('connect_camera(0)',30000);
+			else if (index == 1)
+				setTimeout('connect_camera(1)',30000);	
+			else if (index == 2)
+				setTimeout('connect_camera(2)',30000);	
+			else if (index == 3)
+				setTimeout('connect_camera(3)',30000);
+			else if (index == 4)
+				setTimeout('connect_camera(4)',30000);	
+			else if (index == 5)
+				setTimeout('connect_camera(5)',30000);	
+			else if (index == 6)
+				setTimeout('connect_camera(6)',30000);
+			else if (index == 7)
+				setTimeout('connect_camera(7)',30000);	
+			else if (index == 8)
+				setTimeout('connect_camera(8)',30000);
+		}
+	}
+	else
+	{
+		cameras.pri[index] = pri + 1;
+		if (current == index)
+		{
+			visitor_link.disabled = false;
+			if (cameras.pri[index] > PRI_VISITOR)
+			{
+				operator_link.disabled = false;
+				visitor_table.style.display = 'none';
+				operator_table.style.display = '';
+			}
+			else
+			{
+				operator_link.disabled = true;
+				visitor_table.style.display = '';
+				operator_table.style.display = 'none';
+			}
+		}
+		if (index == 0)
+		{
+			if (cameras.pri[0] > PRI_OPERATOR)
+				administrator_link.disabled = false;
+			else	
+				administrator_link.disabled = true;
+		}	
+		cameras.retry_times[index] = 0;
+			
+		device_status[index].src = green_ball.src;
+		audio[index].src = audio_up.src;
+		talk[index].src = talk_up.src;					        
+		ipcam[index].PlayVideo();
+	}
+}
+
+function ipcam_OnMonitorDisconnected(index,reason) 
+{
+	cameras.pri[index] = PRI_REFUSE;
+	if (current == index)
+	{
+		visitor_link.disabled = true;
+		visitor_table.style.display = 'none';	
+		operator_link.disabled = true;
+		operator_table.style.display = 'none';	
+	}
+	if (index == 0)
+	{
+		administrator_link.disabled = true;
+	}	
+		
+	if (cameras.host[index] == '')
+		device_status[index].src = gray_ball.src;
+	else
+		device_status[index].src = yellow_ball.src;
+			
+	if ((reason == OK) || (reason == ERROR_CANCEL))
+	{
+		if (cameras.restart[index] == 1)
+		{
+			cameras.restart[index] = 0;
+			connect_camera(index);	
+		}
+			
+		return;	
+	}
+		
+	cameras.retry_times[index] = 10;
+	if (index == 0)
+		setTimeout('connect_camera(0)',30000);
+	else if (index == 1)
+		setTimeout('connect_camera(1)',30000);	
+	else if (index == 2)
+		setTimeout('connect_camera(2)',30000);		
+	else if(index == 3)
+		setTimeout('connect_camera(3)',30000);	
+	else if (index == 4)
+		setTimeout('connect_camera(4)',30000);		
+	else if(index == 5)
+		setTimeout('connect_camera(5)',30000);	
+	else if (index == 6)
+		setTimeout('connect_camera(6)',30000);		
+	else if(index == 7)
+		setTimeout('connect_camera(7)',30000);	
+	else if (index == 8)
+		setTimeout('connect_camera(8)',30000);
+}
+
+function ipcam_OnMonitorParamsChanged(index) 
+{
+	if (current == index)
+	{
+		resolution.value = ipcam[index].Resolution;
+		mode.value = ipcam[index].Saturation;	
+		MaxVideoRate.value = ipcam[index].MaxVideoRate;
+		brightness.value = Math.round(ipcam[index].Brightness / 16);
+		contrast.value = ipcam[index].Contrast;
+		image_reversal.checked = (ipcam[index].CameraFlip & 0x01)?true:false;
+		image_mirror.checked = (ipcam[index].CameraFlip & 0x02)?true:false;
+		osd.selectedIndex = ipcam[index].OSD;
+		buffer.value = ipcam[index].BufferTime;
+	}
+}
+
+function ipcam_OnPlayVideoResult(index,result) 
+{
+	if (result != OK)
+	{
+		if (ipcam[index].AudioStatus != 2)
+		record[index].src = record_off.src;
+		top.showerror(index,top.str_failtoplayvideo,result);
+	}
+	else
+	{
+		if (ipcam[index].AudioStatus != 2)
+		record[index].src = record_up.src;
+	}
+}
+
+function ipcam_OnPlayAudioResult(index,result) 
+{
+	if (result != OK)
+	{
+		audio[index].src = audio_up.src;
+		if (ipcam[index].VideoStatus != 2)
+			record[index].src = record_off.src;
+		top.showerror(index,top.str_failtoplayaudio,result);
+	}
+	else
+	{
+		if (ipcam[index].VideoStatus != 2)
+			record[index].src = record_up.src;
+		audio[index].src = stop_up_small.src;
+	}
+}
+
+function ipcam_OnStartTalkResult(index,result) 
+{
+	if (result != OK)
+	{
+		talk[index].src = talk_up.src;
+		showerror(index,top.str_failtostarttalk,result);
+	}
+	else
+	{
+		talk[index].src = stop_up.src;
+	}
+}
+
+function ipcam_OnRecordStopped(index,reason) 
+{
+	record[index].src = record_up.src;
+	if(reason != OK)
+	{
+		var str = navigator.userAgent.split(";");
+		if(str[2] == " Windows NT 6.0")
+		{
+			window.alert(top.str_SetTrustedSites/*"To record video,you must add your device's ip address to IE's trusted sites!"+"\n"+"the 'Trusted sites' path: IE browser->Tool->Internet Options->Security->Trusted sites-> Add"*/);
+		}
+	}
+}
+
+function ipcam_OnStartRecordResult(index,result) 
+{
+	if (result != OK)
+	{
+		record[index].src = record_up.src;
+		top.showerror(index,top.str_failtorecord,result);
+	}
+	else
+	{
+		record[index].src = stop_up_small.src;
+	}
+}
+
+function ipcam_OnVideoStopped(index,reason) 
+{
+	if (ipcam[index].AudioStatus != 2)
+	record[index].src = record_off.src;
+	if (reason == ERROR_TIMEOUT)
+		ipcam[index].PlayVideo();
+}
+
+function ipcam_OnAudioStopped(index,reason) 
+{
+	if (ipcam[index].VideoStatus != 2)
+		record[index].src = record_off.src;
+	audio[index].src = audio_up.src;
+}
+function ipcam_OnTalkStopped(index,reason) 
+{
+	talk[index].src = talk_up.src;
+}
+
+function ipcam_OnFocus(index) 
+{
+	if (index == current)
+		return;
+	
+	ipcam[current].SetFocus(0);
+	current = index;	
+	
+	if (cameras.pri[index] > PRI_VISITOR)
+	{
+		visitor_link.disabled = false;
+		operator_link.disabled = false;
+		visitor_table.style.display = 'none';
+		operator_table.style.display = '';
+	}
+	else if (cameras.pri[index] > PRI_REFUSE)
+	{
+		visitor_link.disabled = false;
+		operator_link.disabled = true;
+		visitor_table.style.display = '';
+		operator_table.style.display = 'none';
+	}
+	else
+	{
+		visitor_link.disabled = true;
+		operator_link.disabled = true;
+		visitor_table.style.display = 'none';
+		operator_table.style.display = 'none';	
+	}
+		
+	if (cameras.valid[index])
+		alias_span.innerText = cameras.alias[index];
+	else
+		alias_span.innerText = top.str_unselected;
+		
+	if (ipcam[index].MonitorStatus == 2)
+	{
+		resolution.value = ipcam[index].Resolution;
+		mode.value = ipcam[index].Saturation;	
+		MaxVideoRate.value = ipcam[index].MaxVideoRate;	
+		brightness.value = Math.round(ipcam[index].Brightness / 16);
+		contrast.value = ipcam[index].Contrast;
+		image_reversal.checked = (ipcam[index].CameraFlip & 0x01)?true:false;
+		image_mirror.checked = (ipcam[index].CameraFlip & 0x02)?true:false;
+		osd.selectedIndex = ipcam[index].OSD;
+		buffer.value = ipcam[index].BufferTime;
+	}
+}
+
+function visitor()
+{
+	if (cameras.pri[current] < PRI_VISITOR)
+		return;
+		
+	operator_table.style.display = 'none';
+	if (visitor_table.style.display == 'none')
+		visitor_table.style.display = '';
+	else
+		visitor_table.style.display = 'none';	
+}
+
+function operator()
+{
+	if (cameras.pri[current] < PRI_OPERATOR)
+		return;
+	
+	visitor_table.style.display = 'none';
+	if (operator_table.style.display == 'none')
+		operator_table.style.display = '';
+	else
+		operator_table.style.display = 'none';	
+}
+
+function administrator()
+{
+	if (cameras.pri[0] < PRI_ADMINISTRATOR)
+		return;		
+		
+	location.href = 'admin.htm';		
+}
+
+function set_ipcam_osd(index,osd)
+{
+	if (osd == '1')
+		ipcam[index].OSD = 1;
+	else if (osd == '2')
+		ipcam[index].OSD = 2;
+	else if (osd == '3')
+		ipcam[index].OSD = 3;
+	else if (osd == '4')
+		ipcam[index].OSD = 4;
+	else if (osd == '5')
+		ipcam[index].OSD = 5;
+	else
+		ipcam[index].OSD = 0;				
+}
+
+
+function body_onload()
+{       
+        FILE_NO = top.getcookie('filepop');
+        if(FILE_NO==1)
+        {       
+            ipcam[current].AutoDisplayAlarmRecord = false;
+            nofilePop.src = filePop_no1.src;
+            FILE_NO = 0;
+        }
+        else   
+        {         
+            ipcam[current].AutoDisplayAlarmRecord = true;
+            nofilePop.src = filePop_yes1.src;
+            FILE_NO = 1;
+        }
+        nofilePop.title = top.str_filePop;
+	playvideo.title = top.str_play;
+	stopvideo.title = top.str_stop;
+	snapshot.title = top.str_snapshot;
+	audio[0].title = top.str_audio;
+	audio[1].title = top.str_audio;
+	audio[2].title = top.str_audio;
+	audio[3].title = top.str_audio;
+	audio[4].title = top.str_audio;
+	audio[5].title = top.str_audio;
+	audio[6].title = top.str_audio;
+	audio[7].title = top.str_audio;
+	audio[8].title = top.str_audio;
+	
+	talk[0].title = top.str_talk;
+	talk[1].title = top.str_talk;
+	talk[2].title = top.str_talk;
+	talk[3].title = top.str_talk;
+	talk[4].title = top.str_talk;
+	talk[5].title = top.str_talk;
+	talk[6].title = top.str_talk;
+	talk[7].title = top.str_talk;
+	talk[8].title = top.str_talk;
+	
+	record[0].title = top.str_record;
+	record[1].title = top.str_record;
+	record[2].title = top.str_record;
+	record[3].title = top.str_record;
+	record[4].title = top.str_record;
+	record[5].title = top.str_record;
+	record[6].title = top.str_record;
+	record[7].title = top.str_record;
+	record[8].title = top.str_record;
+	gocenter.title = top.str_center;
+	vpatrol.title = top.str_vertical_patrol;
+	vpatrolstop.title = top.str_stop_vertical_patrol;
+	hpatrol.title = top.str_horizon_patrol;
+	hpatrolstop.title = top.str_stop_horizon_patrol;
+	switchon.title = top.str_switchon;
+	switchoff.title = top.str_switchoff;
+	
+	var port;
+	if (location.port == '')
+		port = 80;
+	else
+		port = location.port;
+		
+	cameras.set_params(0,top.alias,location.hostname,port,top.user,top.pwd);		
+	cameras.set_params(1,'','',0,'','');
+	cameras.set_params(2,'','',0,'','');
+	cameras.set_params(3,'','',0,'','');
+	cameras.set_params(4,'','',0,'','');
+	cameras.set_params(5,'','',0,'','');
+	cameras.set_params(6,'','',0,'','');
+	cameras.set_params(7,'','',0,'','');
+	cameras.set_params(8,'','',0,'','');
+	
+	cameras.set_count(0,1);	
+	x1.checked = true;		
+	current = 0;
+	ipcam[0].SetFocus(true);	
+	alias_span.innerText = cameras.alias[0];
+	
+	set_ipcam_osd(0,top.getcookie('osd1'));
+	set_ipcam_osd(1,top.getcookie('osd2'));
+	set_ipcam_osd(2,top.getcookie('osd3'));
+	set_ipcam_osd(3,top.getcookie('osd4'));
+	set_ipcam_osd(4,top.getcookie('osd5'));
+	set_ipcam_osd(5,top.getcookie('osd6'));
+	set_ipcam_osd(6,top.getcookie('osd7'));
+	set_ipcam_osd(7,top.getcookie('osd8'));
+	set_ipcam_osd(8,top.getcookie('osd9'));
+	
+	if (record_osd && (top.getcookie('record_osd')=='true'))
+	{
+		record_osd_chk.checked=true;
+		ipcam[0].RecordOSD=true;
+		ipcam[1].RecordOSD=true;
+		ipcam[2].RecordOSD=true;
+		ipcam[3].RecordOSD=true;
+		ipcam[4].RecordOSD=true;
+		ipcam[5].RecordOSD=true;
+		ipcam[6].RecordOSD=true;
+		ipcam[7].RecordOSD=true;
+		ipcam[8].RecordOSD=true;
+	}
+
+	for (i = 0;i < 9; ++ i)
+	{
+		ipcam[i].AutoRecordOnAlarm = true;
+		ipcam[i].PTZOnScreen = 1;
+		cameras.pri[i] = PRI_REFUSE;
+		cameras.retry_times[i] = 0;
+		cameras.restart[i] = 0;
+		cameras.alarm[i] = 0;
+		cameras.alarm_light[i] = 0;
+		 
+		if (cameras.valid[i] == 1)
+		{
+			ipcam[i].style.width = 320;
+			ipcam[i].style.height = 240;
+		}
+		else
+		{
+			ipcam[i].style.width = 0;
+			ipcam[i].style.height = 0;
+		}
+		
+		if (cameras.host[i] != '')
+		{
+			device_status[i].src = yellow_ball.src;	
+			connect_camera(i);
+		}
+		else
+		{
+			device_status[i].src = gray_ball.src;
+			audio[i].src = audio_off.src;
+		}				
+	}
+}
+
+function body_onunload()
+{
+	for (i = 0;i < 9;++ i)
+	{
+		ipcam[i].StopVideo();
+		ipcam[i].StopAudio();
+		ipcam[i].StopTalk();
+		ipcam[i].StopRecord();
+		ipcam[i].MonitorDisconnect();
+	}
+}
+
+function ipcam_OnOtherDevicesParamsChanged(index)
+{
+	if (index != 0)
+		return;
+		
+	var alias, host, port, user, pwd; 
+	
+	ipcam[1].StopVideo();
+	ipcam[1].StopAudio();
+	ipcam[1].StopTalk();
+	ipcam[1].StopRecord();
+	ipcam[1].MonitorDisconnect();
+	host = ipcam[0].GetOtherDeviceHost(1);
+	alias = ipcam[0].GetOtherDeviceAlias(1);
+	if (alias == '')
+		alias = top.str_anonymous;
+	port = ipcam[0].GetOtherDevicePort(1);
+	user = ipcam[0].GetOtherDeviceUser(1);
+	pwd = ipcam[0].GetOtherDevicePwd(1);
+	if (host == '')
+	{
+		cameras.set_params(1,'','',0,'','');		
+		device_status[1].src = gray_ball.src;
+	}
+	else
+	{
+		cameras.set_params(1,alias,host,port,user,pwd);
+		device_status[1].src = yellow_ball.src;	
+		setTimeout('connect_camera(1)',1000);
+	}
+	
+	ipcam[2].StopVideo();
+	ipcam[2].StopAudio();
+	ipcam[2].StopTalk();
+	ipcam[2].StopRecord();
+	ipcam[2].MonitorDisconnect();
+	host = ipcam[0].GetOtherDeviceHost(2);
+	alias = ipcam[0].GetOtherDeviceAlias(2);
+	if (alias == '')
+		alias = top.str_anonymous;
+	port = ipcam[0].GetOtherDevicePort(2);
+	user = ipcam[0].GetOtherDeviceUser(2);
+	pwd = ipcam[0].GetOtherDevicePwd(2);
+	if (host == '')
+	{
+		cameras.set_params(2,'','',0,'','');		
+		device_status[2].src = gray_ball.src;
+	}
+	else
+	{
+		cameras.set_params(2,alias,host,port,user,pwd);
+		device_status[2].src = yellow_ball.src;
+		setTimeout('connect_camera(2)',1000);
+	}
+	
+	ipcam[3].StopVideo();
+	ipcam[3].StopAudio();
+	ipcam[3].StopTalk();
+	ipcam[3].StopRecord();
+	ipcam[3].MonitorDisconnect();
+	host = ipcam[0].GetOtherDeviceHost(3);
+	alias = ipcam[0].GetOtherDeviceAlias(3);
+	if (alias == '')
+		alias = top.str_anonymous;
+	port = ipcam[0].GetOtherDevicePort(3);
+	user = ipcam[0].GetOtherDeviceUser(3);
+	pwd = ipcam[0].GetOtherDevicePwd(3);
+	if (host == '')
+	{
+		cameras.set_params(3,'','',0,'','');		
+		device_status[3].src = gray_ball.src;
+	}
+	else
+	{
+		cameras.set_params(3,alias,host,port,user,pwd);
+		device_status[3].src = yellow_ball.src;
+		setTimeout('connect_camera(3)',1000);
+	}
+	
+	ipcam[4].StopVideo();
+	ipcam[4].StopAudio();
+	ipcam[4].StopTalk();
+	ipcam[4].StopRecord();
+	ipcam[4].MonitorDisconnect();
+	host = ipcam[0].GetOtherDeviceHost(4);
+	alias = ipcam[0].GetOtherDeviceAlias(4);
+	if (alias == '')
+		alias = top.str_anonymous;
+	port = ipcam[0].GetOtherDevicePort(4);
+	user = ipcam[0].GetOtherDeviceUser(4);
+	pwd = ipcam[0].GetOtherDevicePwd(4);
+	if (host == '')
+	{
+		cameras.set_params(4,'','',0,'','');		
+		device_status[4].src = gray_ball.src;
+	}
+	else
+	{
+		cameras.set_params(4,alias,host,port,user,pwd);
+		device_status[4].src = yellow_ball.src;
+		setTimeout('connect_camera(4)',1000);
+	}
+	
+	ipcam[5].StopVideo();
+	ipcam[5].StopAudio();
+	ipcam[5].StopTalk();
+	ipcam[5].StopRecord();
+	ipcam[5].MonitorDisconnect();
+	host = ipcam[0].GetOtherDeviceHost(5);
+	alias = ipcam[0].GetOtherDeviceAlias(5);
+	if (alias == '')
+		alias = top.str_anonymous;
+	port = ipcam[0].GetOtherDevicePort(5);
+	user = ipcam[0].GetOtherDeviceUser(5);
+	pwd = ipcam[0].GetOtherDevicePwd(5);
+	if (host == '')
+	{
+		cameras.set_params(5,'','',0,'','');		
+		device_status[5].src = gray_ball.src;
+	}
+	else
+	{
+		cameras.set_params(5,alias,host,port,user,pwd);
+		device_status[5].src = yellow_ball.src;
+		setTimeout('connect_camera(5)',1000);
+	}
+	
+	ipcam[6].StopVideo();
+	ipcam[6].StopAudio();
+	ipcam[6].StopTalk();
+	ipcam[6].StopRecord();
+	ipcam[6].MonitorDisconnect();
+	host = ipcam[0].GetOtherDeviceHost(6);
+	alias = ipcam[0].GetOtherDeviceAlias(6);
+	if (alias == '')
+		alias = top.str_anonymous;
+	port = ipcam[0].GetOtherDevicePort(6);
+	user = ipcam[0].GetOtherDeviceUser(6);
+	pwd = ipcam[0].GetOtherDevicePwd(6);
+	if (host == '')
+	{
+		cameras.set_params(6,'','',0,'','');		
+		device_status[6].src = gray_ball.src;
+	}
+	else
+	{
+		cameras.set_params(6,alias,host,port,user,pwd);
+		device_status[6].src = yellow_ball.src;
+		setTimeout('connect_camera(6)',1000);
+	}
+	
+	ipcam[7].StopVideo();
+	ipcam[7].StopAudio();
+	ipcam[7].StopTalk();
+	ipcam[7].StopRecord();
+	ipcam[7].MonitorDisconnect();
+	host = ipcam[0].GetOtherDeviceHost(7);
+	alias = ipcam[0].GetOtherDeviceAlias(7);
+	if (alias == '')
+		alias = top.str_anonymous;
+	port = ipcam[0].GetOtherDevicePort(7);
+	user = ipcam[0].GetOtherDeviceUser(7);
+	pwd = ipcam[0].GetOtherDevicePwd(7);
+	if (host == '')
+	{
+		cameras.set_params(7,'','',0,'','');		
+		device_status[7].src = gray_ball.src;
+	}
+	else
+	{
+		cameras.set_params(7,alias,host,port,user,pwd);
+		device_status[7].src = yellow_ball.src;
+		setTimeout('connect_camera(7)',1000);
+	}
+	
+	ipcam[8].StopVideo();
+	ipcam[8].StopAudio();
+	ipcam[8].StopTalk();
+	ipcam[8].StopRecord();
+	ipcam[8].MonitorDisconnect();
+	host = ipcam[0].GetOtherDeviceHost(8);
+	alias = ipcam[0].GetOtherDeviceAlias(8);
+	if (alias == '')
+		alias = top.str_anonymous;
+	port = ipcam[0].GetOtherDevicePort(8);
+	user = ipcam[0].GetOtherDeviceUser(8);
+	pwd = ipcam[0].GetOtherDevicePwd(8);
+	if (host == '')
+	{
+		cameras.set_params(8,'','',0,'','');		
+		device_status[8].src = gray_ball.src;
+	}
+	else
+	{
+		cameras.set_params(8,alias,host,port,user,pwd);
+		device_status[8].src = yellow_ball.src;
+		setTimeout('connect_camera(8)',1000);
+	}
+}
+
+function ipcam_OnPTZOnScreen(index,ptz)
+{
+	if (ipcam[index].MonitorStatus != 2)
+		return;
+	
+	if (ptz == 0)
+	{
+		ipcam[index].DecoderControl(PTZ_STOP);
+	}
+	else if (ptz == 1)
+	{
+		if ((ipcam[index].CameraFlip & 0x03) == 0x03)
+			ipcam[index].DecoderControl(PTZ_RIGHT_DOWN);
+		else if (ipcam[index].CameraFlip & 0x02)
+			ipcam[index].DecoderControl(PTZ_RIGHT_UP);
+		else if (ipcam[index].CameraFlip & 0x01)
+			ipcam[index].DecoderControl(PTZ_LEFT_DOWN);
+		else		
+			ipcam[index].DecoderControl(PTZ_LEFT_UP);
+	}
+	else if (ptz == 2)
+	{
+		if (ipcam[index].CameraFlip & 0x01)
+			ipcam[index].DecoderControl(TILT_DOWN);
+		else	
+			ipcam[index].DecoderControl(TILT_UP);
+	}	
+	else if (ptz == 3)
+	{
+		if ((ipcam[index].CameraFlip & 0x03) == 0x03)
+			ipcam[index].DecoderControl(PTZ_LEFT_DOWN);
+		else if (ipcam[index].CameraFlip & 0x02)
+			ipcam[index].DecoderControl(PTZ_LEFT_UP);
+		else if (ipcam[index].CameraFlip & 0x01)
+			ipcam[index].DecoderControl(PTZ_RIGHT_DOWN);
+		else		
+			ipcam[index].DecoderControl(PTZ_RIGHT_UP);
+	}	
+	else if (ptz == 4)
+	{
+		if (ipcam[index].CameraFlip & 0x02)
+			ipcam[index].DecoderControl(PAN_RIGHT);
+		else	
+			ipcam[index].DecoderControl(PAN_LEFT);
+	}	
+	else if (ptz == 5)
+	{
+		ipcam[index].DecoderControl(PTZ_CENTER);
+	}	
+	else if (ptz == 6)
+	{
+		if (ipcam[index].CameraFlip & 0x02)
+			ipcam[index].DecoderControl(PAN_LEFT);
+		else	
+			ipcam[index].DecoderControl(PAN_RIGHT);
+	}	
+	else if (ptz == 7)
+	{
+		if ((ipcam[index].CameraFlip & 0x03) == 0x03)
+			ipcam[index].DecoderControl(PTZ_RIGHT_UP);
+		else if (ipcam[index].CameraFlip & 0x02)
+			ipcam[index].DecoderControl(PTZ_RIGHT_DOWN);
+		else if (ipcam[index].CameraFlip & 0x01)
+			ipcam[index].DecoderControl(PTZ_LEFT_UP);
+		else		
+			ipcam[index].DecoderControl(PTZ_LEFT_DOWN);
+	}	
+	else if (ptz == 8)
+	{
+		if (ipcam[index].CameraFlip & 0x01)
+			ipcam[index].DecoderControl(TILT_UP);
+		else	
+			ipcam[index].DecoderControl(TILT_DOWN);
+	}	
+	else if (ptz == 9)
+	{
+		if ((ipcam[index].CameraFlip & 0x03) == 0x03)
+			ipcam[index].DecoderControl(PTZ_LEFT_UP);
+		else if (ipcam[index].CameraFlip & 0x02)
+			ipcam[index].DecoderControl(PTZ_LEFT_DOWN);
+		else if (ipcam[index].CameraFlip & 0x01)
+			ipcam[index].DecoderControl(PTZ_RIGHT_UP);
+		else		
+			ipcam[index].DecoderControl(PTZ_RIGHT_DOWN);
+	}	
+}
+
+setTimeout('timer()',1000);
+
+</script>
+
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnOtherDevicesParamsChanged()>
+<!--
+ ipcam_OnOtherDevicesParamsChanged(this.name)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnAlarm(alarm)>
+<!--
+ ipcam_OnAlarm(this.name,alarm)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnImageSizeChanged(width,height)>
+<!--
+ ipcam_OnImageSizeChanged(this.name,width,height)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnMonitorConnectResult(result,pri)>
+<!--
+ ipcam_OnMonitorConnectResult(this.name,result,pri)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnMonitorDisconnected(reason)>
+<!--
+ ipcam_OnMonitorDisconnected(this.name,reason)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnMonitorParamsChanged>
+<!--
+ ipcam_OnMonitorParamsChanged(this.name)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnPlayVideoResult(result)>
+<!--
+ ipcam_OnPlayVideoResult(this.name,result)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnPlayAudioResult(result)>
+<!--
+ ipcam_OnPlayAudioResult(this.name,result)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnStartTalkResult(result)>
+<!--
+ ipcam_OnStartTalkResult(this.name,result)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnRecordStopped(reason)>
+<!--
+ ipcam_OnRecordStopped(this.name,reason)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnStartRecordResult(result)>
+<!--
+ ipcam_OnStartRecordResult(this.name,result)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnVideoStopped(reason)>
+<!--
+ ipcam_OnVideoStopped(this.name,reason)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnAudioStopped(reason)>
+<!--
+ ipcam_OnAudioStopped(this.name,reason)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnTalkStopped(reason)>
+<!--
+ ipcam_OnTalkStopped(this.name,reason)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnAlarmStopped>
+<!--
+ ipcam_OnAlarmStopped(this.name)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnFocus>
+<!--
+ ipcam_OnFocus(this.name)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=ipcam EVENT=OnPTZOnScreen(ptz)>
+<!--
+ ipcam_OnPTZOnScreen(this.name,ptz)
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE="JavaScript">
+<!-- 
+function mouseover_bgcolor(obj)
+{ 
+        oldcolor=obj.style.backgroundColor;
+        old_font_color="f5ffff";	
+        obj.style.backgroundColor="#5a86ab";    
+
+}
+function mouseout(obj)
+{              
+        obj.style.backgroundColor=oldcolor;
+		obj.style.color=old_font_color;
+}
+
+function mouseover_font(obj)
+{ 
+        oldcolor=obj.style.backgroundColor;
+        old_font_color="f5ffff";
+		obj.style.color="yellow";
+}
+
+//--> 
+</SCRIPT>
+
+<body alink="#0099ff" vlink="yellow" style="text-align:center;" onload = "body_onload();" onunload = "body_onunload();">
+
+<table border=0 cellpadding=0 cellspacing=0 width=824 align="center" height =56  >
+	<tr><td background="./images/toppic1.JPG" ><font face="Arial" color="white" size="5px">&nbsp;&nbsp;Real-time&nbsp;IP&nbsp;Camera&nbsp;Monitoring&nbsp;System</font></td><td width=344 bgcolor="#5a86ab"></td></tr>
+</table>
+<table border=0 cellpadding=0 cellspacing=0 width=824 height = 480><tr align="center"><!--hawk  width=814-->
+	<td height = 480 bgcolor = #d8d8d8 valign = "top" style="padding-left:2px; padding-right:2px; padding-top:5px; padding-bottom:5px" class="rect_right"><table width =170 border=0 cellpadding=0 cellspacing=0 class="mid01">
+		
+		<tr height="20"><td align = center valign="bottom" bgcolor=#415173 style="font-size:13px; color:white" class="mid02"><strong><font face="Arial"><script language="javascript">document.write(top.str_devicestatus);</script></font></strong></td></tr>
+		
+		<tr><td><table>
+			<!--<tr height="10"><td> </td></tr>-->
+			<tr height="18"><td align = center style="font-size:12px; color:004080"><span id="alias_span">
+                <font face="Arial"><script language="javascript">document.write(top.str_unselected);</script></font>
+              </span></td><!--font huaikan--></tr>
+			<tr height = "22"><td><table width = 160 height = 30 border=0 cellpadding=0 cellspacing=0 valign = "middle" align = "center"><tr>
+				<td style="font-size:12px; color:#004080">1</td><td><img src="images/gray.gif" name="0" width="20" height="20" id="device_status"></td>
+				<td style="font-size:12px; color:#004080">2</td><td><img src="images/gray.gif" name="1" width="20" height="20" id="device_status"></td>
+				<td style="font-size:12px; color:#004080">3</td><td><img src="images/gray.gif" name="2" width="20" height="20" id="device_status"></td>
+				<td style="font-size:12px; color:#004080">4</td><td><img src="images/gray.gif" name="3" width="20" height="20" id="device_status"></td>
+				<td style="font-size:12px; color:#004080">5</td><td><img src="images/gray.gif" name="3" width="20" height="20" id="device_status"></td>
+			</tr></table></td></tr>
+			
+			<tr height = "22"><td><table width = 160 height = 30 border=0 cellpadding=0 cellspacing=0 valign = "middle" align = "center"><tr>
+				<td style="font-size:12px; color:#004080">6</td><td><img src="images/gray.gif" name="5" width="20" height="20" id="device_status"></td>
+				<td style="font-size:12px; color:#004080">7</td><td><img src="images/gray.gif" name="6" width="20" height="20" id="device_status"></td>
+				<td style="font-size:12px; color:#004080">8</td><td><img src="images/gray.gif" name="7" width="20" height="20" id="device_status"></td>
+				<td style="font-size:12px; color:#004080">9</td><td><img src="images/gray.gif" name="8" width="20" height="20" id="device_status"></td>
+                                
+				<td style="font-size:12px; color:#004080;visibility:hidden">+</td>
+				<td><img src="images/gray.gif" name="8" width="20" height="20" id="device_status" style="visibility:hidden"></td>
+			</tr></table></td></tr>
+			
+			<!--<tr height="10"><td> </td></tr>-->
+		</table></td></tr>
+		
+		<tr height="20">
+        <td align = center valign="bottom" bgcolor=#415173  class="mid02" onMouseOver="return mouseover_bgcolor(this)" onMouseOut="return mouseout(this)"><a id = "visitor_link" href="javascript:visitor();" style="font-size:13px; color:f5ffff" onMouseOver="return mouseover_font(this)" onMouseOut="return mouseout(this)"><strong><font face="Arial">
+          <script language="javascript">document.write(top.str_4visitor);</script>
+        </font></strong></a></td>
+      </tr>
+		
+		<tr><td><table id = visitor_table width = 160 border=0 style="display:block">
+			<tr height="10"><td> </td></tr>
+			<tr height = 30 align = middle><td>
+				<INPUT type="radio" id=x1 name=x checked LANGUAGE=javascript onClick="return x_onclick()"><img src = images/x1.gif>
+				<INPUT type="radio" id=x4 name=x checked LANGUAGE=javascript onClick="return x_onclick()"><img src = images/x4.gif>
+				<INPUT type="radio" id=x9 name=x LANGUAGE=javascript onClick="return x_onclick()"><img src = images/x9.gif>
+			</td></tr>
+			<!--hawk remove flip&mirro-->
+			<tr height = 10><td> </td></tr>
+			<tr height = 30 align = middle>
+				<td style="font-size:12px; color:#004080" align="center">OSD&nbsp;&nbsp;&nbsp;&nbsp;<SELECT style="WIDTH: 95px; HEIGHT: 15px" id="osd" LANGUAGE=javascript onChange="return osd_onchange()"><script language="javascript">document.write(top.str_osd_option);</script></SELECT></td>
+			</tr>
+			
+			<script>if (record_osd) document.write('<tr height=\"30\"><td style=\"font-size:12px; color:#004080\" align=\"center\"><input type=\"checkbox\" id=\"record_osd_chk\" onClick=\"record_osd_onclick()\">'+top.str_record_osd+'<\/td><\/tr>');</script>
+			
+			<tr height = 30 align = middle>
+				<td style="font-size:12px; color:#004080" align="center"><script language="javascript">document.write(top.str_buffer);</script>&nbsp;&nbsp;&nbsp;<SELECT style="WIDTH: 65px; HEIGHT: 15px" id="buffer" LANGUAGE=javascript onChange="return buffer_onchange()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></SELECT></td>
+			</tr>
+			<tr height = 10><td> </td></tr>
+			<tr height = 16 align = center>
+			    <td>
+                                    &nbsp;&nbsp;<img id="nofilePop" src="images/filepop_yes.gif"  onClick="return nofilePop_onmousedown()"  >
+                                    &nbsp;&nbsp;<img id="playvideo" src="images/play_up.gif" onClick="return playvideo_onclick()" onMouseDown="return playvideo_onmousedown()" onMouseUp="return playvideo_onmouseup()">
+				    &nbsp;&nbsp;<img id="stopvideo" src="images/stop_up.gif" onClick="return stopvideo_onclick()" onMouseDown="return stopvideo_onmousedown()" onMouseUp="return stopvideo_onmouseup()">
+				    &nbsp;&nbsp;<img id="snapshot" src="images/snapshot_up.gif" onClick="return snapshot_onclick()" onMouseDown="return snapshot_onmousedown()" onMouseUp="return snapshot_onmouseup()">
+                                    
+			    </td>
+		</tr>
+			<tr><td>
+<table width = 160 border=0 cellpadding=0 cellspacing=0 valign = "middle" align = "center">
+			    <tr>
+			      <td style="font-size:12px; color:#004080"><div align="center">1</div></td><td><img src="images/audio_off.gif" name = 0 width="15" height="15" id = audio onClick="return audio_onclick(0)" onMouseDown="return audio_onmousedown(0)" onMouseUp="return audio_onmouseup(0)" LANGUAGE=javascript><img src="images/talk_off.gif" name = 0 width="15" height="15" id = talk onClick="return talk_onclick(0)" onMouseDown="return talk_onmousedown(0)" onMouseUp="return talk_onmouseup(0)" LANGUAGE=javascript><img src="images/record_off.gif" name = 0 width="15" height="15" id = record onClick="return record_onclick(0)" onMouseDown="return record_onmousedown(0)" onMouseUp="return record_onmouseup(0)" LANGUAGE=javascript></td>
+				    <td style="font-size:12px; color:#004080; width: 8px;">2</td><td><img src="images/audio_off.gif" name = 1 width="15" height="15" id = audio onClick="return audio_onclick(1)" onMouseDown="return audio_onmousedown(1)" onMouseUp="return audio_onmouseup(1)" LANGUAGE=javascript><img src="images/talk_off.gif" name = 1 width="15" height="15" id = talk onClick="return talk_onclick(1)" onMouseDown="return talk_onmousedown(1)" onMouseUp="return talk_onmouseup(1)" LANGUAGE=javascript><img src="images/record_off.gif" name = 1 width="15" height="15" id = record onClick="return record_onclick(1)" onMouseDown="return record_onmousedown(1)" onMouseUp="return record_onmouseup(1)" LANGUAGE=javascript></td>
+				    <td style="font-size:12px; color:#004080">3</td>
+				    <td><img src="images/audio_off.gif" name = 2 width="15" height="15" id = audio onClick="return audio_onclick(2)" onMouseDown="return audio_onmousedown(2)" onMouseUp="return audio_onmouseup(2)" LANGUAGE=javascript><img id = talk src="images/talk_off.gif" name = 2 width="15" height="15" LANGUAGE=javascript onClick="return talk_onclick(2)" onMouseDown="return talk_onmousedown(2)" onMouseUp="return talk_onmouseup(2)"><img src="images/record_off.gif" name = 2 width="15" height="15" id = record onClick="return record_onclick(2)" onMouseDown="return record_onmousedown(2)" onMouseUp="return record_onmouseup(2)" LANGUAGE=javascript></td>
+			</tr>
+			    </table>
+			  </td></tr>	
+			<tr><td>
+			   <table width = 160 border=0 cellpadding=0 cellspacing=0 valign = "middle" align = "center">
+			      <tr>
+			        <td style="font-size:12px; color:#004080; height: 15px;">4</td>
+				        <td style="height: 15px"><img src="images/audio_off.gif" name = 3 width="15" height="15" id = audio onClick="return audio_onclick(3)" onMouseDown="return audio_onmousedown(3)" onMouseUp="return audio_onmouseup(3)" LANGUAGE=javascript><img id = talk src="images/talk_off.gif" name = 3 width="15" height="15" LANGUAGE=javascript onClick="return talk_onclick(3)" onMouseDown="return talk_onmousedown(3)" onMouseUp="return talk_onmouseup(3)"><img src="images/record_off.gif" name = 3 width="15" height="15" id = record onClick="return record_onclick(3)" onMouseDown="return record_onmousedown(3)" onMouseUp="return record_onmouseup(3)" LANGUAGE=javascript></td>
+				        <td style="font-size:12px; color:#004080; height: 15px;">5</td><td style="height: 15px"><img src="images/audio_off.gif" name = 4 width="15" height="15" id = audio onClick="return audio_onclick(4)" onMouseDown="return audio_onmousedown(4)" onMouseUp="return audio_onmouseup(4)" LANGUAGE=javascript><img id = talk src="images/talk_off.gif" name = 4 width="15" height="15" LANGUAGE=javascript onClick="return talk_onclick(4)" onMouseDown="return talk_onmousedown(4)" onMouseUp="return talk_onmouseup(4)"><img src="images/record_off.gif" name = 4 width="15" id = record onClick="return record_onclick(4)" onMouseDown="return record_onmousedown(4)" onMouseUp="return record_onmouseup(4)" LANGUAGE=javascript></td>
+				        <td style="font-size:12px; color:#004080; height: 15px;">6</td><td style="height: 15px"><img src="images/audio_off.gif" name = 5 width="15" height="15" id = audio onClick="return audio_onclick(5)" onMouseDown="return audio_onmousedown(5)" onMouseUp="return audio_onmouseup(5)" LANGUAGE=javascript><img id = talk src="images/talk_off.gif" name = 5 width="15" height="15" LANGUAGE=javascript onClick="return talk_onclick(5)" onMouseDown="return talk_onmousedown(5)" onMouseUp="return talk_onmouseup(5)"><img src="images/record_off.gif" name = 5 width="15" height="15" id = record onClick="return record_onclick(5)" onMouseDown="return record_onmousedown(5)" onMouseUp="return record_onmouseup(5)" LANGUAGE=javascript></td>
+			        </tr>
+			      </table>
+		      </td></tr>
+			<tr><td>
+			<table width = 160 border=0 cellpadding=0 cellspacing=0 valign = "middle" align = "center"><tr>
+				<td style="font-size:12px; color:#004080; height: 15px;">7</td><td style="height: 15px"><img src="images/audio_off.gif" name = 6 width="15" height="15" id = audio onClick="return audio_onclick(6)" onMouseDown="return audio_onmousedown(6)" onMouseUp="return audio_onmouseup(6)" LANGUAGE=javascript><img id = talk src="images/talk_off.gif" name = 6 width="15" height="15" LANGUAGE=javascript onClick="return talk_onclick(6)" onMouseDown="return talk_onmousedown(6)" onMouseUp="return talk_onmouseup(6)"><img src="images/record_off.gif" name = 6 width="15" height="15" id = record onClick="return record_onclick(6)" onMouseDown="return record_onmousedown(6)" onMouseUp="return record_onmouseup(6)" LANGUAGE=javascript></td>
+				<td style="font-size:12px; color:#004080; height: 15px;">8</td><td style="height: 15px"><img src="images/audio_off.gif" name = 7 width="15" height="15" id = audio onClick="return audio_onclick(7)" onMouseDown="return audio_onmousedown(7)" onMouseUp="return audio_onmouseup(7)" LANGUAGE=javascript><img id = talk src="images/talk_off.gif" name = 7 width="15" height="15" LANGUAGE=javascript onClick="return talk_onclick(7)" onMouseDown="return talk_onmousedown(7)" onMouseUp="return talk_onmouseup(7)"><img src="images/record_off.gif" name = 7 width="15" height="15" id = record onClick="return record_onclick(7)" onMouseDown="return record_onmousedown(7)" onMouseUp="return record_onmouseup(7)" LANGUAGE=javascript></td>
+				<td style="font-size:12px; color:#004080; height: 15px;">9</td>
+				<td style="height: 15px"><img src="images/audio_off.gif" name = 8 width="15" height="15" id = audio onClick="return audio_onclick(8)" onMouseDown="return audio_onmousedown(8)" onMouseUp="return audio_onmouseup(8)" LANGUAGE=javascript><img id = talk src="images/talk_off.gif" name = 8 width="15" height="15" LANGUAGE=javascript onClick="return talk_onclick(8)" onMouseDown="return talk_onmousedown(8)" onMouseUp="return talk_onmouseup(8)"><img src="images/record_off.gif" name = 8 width="15" height="15" id = record onClick="return record_onclick(8)" onMouseDown="return record_onmousedown(8)" onMouseUp="return record_onmouseup(8)" LANGUAGE=javascript></td>
+			</tr></table>
+			</td></tr>
+		</table></td></tr>
+		
+		<tr height="20"><td align = center valign="bottom" bgcolor=#415173 class="mid02" onMouseOver="return mouseover_bgcolor(this)" onMouseOut="return mouseout(this)"><a id = "operator_link" href="javascript:operator();" style="font-size:13px; color:f5ffff" disabled="true" onMouseOver="return mouseover_font(this)" onMouseOut="return mouseout(this)"><strong><font face="Arial">
+          <script language="javascript">document.write(top.str_4operator);</script><!--font huaikan-->
+        </font></strong></a></td></tr>
+		
+		<tr><td align="center"><table id = operator_table width = 160 border=0 valign = middle style="display:none" ><!--huaikan-->
+			<!--<tr height="10"><td> </td></tr>-->
+			<tr><td colspan="2" align = center><table width = 160 border=0 cellpadding=0 cellspacing=0><tr>
+				<td align="center">
+					<div><img src="images/ptz1.gif"><img id="up" src="images/up_up.gif" onMouseDown="return up_onmousedown()" onMouseUp="return up_onmouseup()"><img src="images/ptz2.gif"></div>
+					<div><img id="leftup" src="images/leftup_up.gif" onMouseDown="return leftup_onmousedown()" onMouseUp="return leftup_onmouseup()"><img src = "images/ptz3.gif"><img id="rightup" src="images/rightup_up.gif" onMouseDown="return rightup_onmousedown()" onMouseUp="return rightup_onmouseup()"></div>
+					<div><img id="left" src="images/left_up.gif" onMouseDown="return left_onmousedown()" onMouseUp="return left_onmouseup()"><img id="gocenter" src="images/center_up.gif" onMouseDown="return center_onmousedown()" onMouseUp="return center_onmouseup()"><img id="right" src="images/right_up.gif" onMouseDown="return right_onmousedown()" onMouseUp="return right_onmouseup()"></div>
+					<div><img id="leftdown" src="images/leftdown_up.gif" onMouseDown="return leftdown_onmousedown()" onMouseUp="return leftdown_onmouseup()"><img id="down" src="images/down_up.gif" onMouseDown="return down_onmousedown()" onMouseUp="return down_onmouseup()"><img id="rightdown" src="images/rightdown_up.gif" onMouseDown="return rightdown_onmousedown()" onMouseUp="return rightdown_onmouseup()"></div>
+				</td>
+				<td align="center">
+					<div><img id="vpatrol" src="images/vpatrol_up.gif" onMouseDown="return vpatrol_onmousedown()" onMouseUp="return vpatrol_onmouseup()">&nbsp;&nbsp;<img id="vpatrolstop" src="images/stop_up.gif" onMouseDown="return vpatrolstop_onmousedown()" onMouseUp="return vpatrolstop_onmouseup()"></div>
+					<div><img id="hpatrol" src="images/hpatrol_up.gif" onMouseDown="return hpatrol_onmousedown()" onMouseUp="return hpatrol_onmouseup()">&nbsp;&nbsp;<img id="hpatrolstop" src="images/stop_up.gif" onMouseDown="return hpatrolstop_onmousedown()" onMouseUp="return hpatrolstop_onmouseup()"></div>
+					<div><img id="switchon" src="images/switchon_up.gif" onMouseDown="return switchon_onmousedown()" onMouseUp="return switchon_onmouseup()">&nbsp;&nbsp;<img id="switchoff" src="images/switchoff_up.gif" onMouseDown="return switchoff_onmousedown()" onMouseUp="return switchoff_onmouseup()"></div>
+				</td>	
+			</tr></table></td></tr>
+			
+			<tr height="15" aligh="middle">
+				<td colspan="2" style="font-size:12px; color:#004080" align="center"><input id="image_reversal" type="checkbox" onClick="return image_reversal_onclick()"><script language="javascript">document.write(top.str_reversal);</script>&nbsp;&nbsp;&nbsp;&nbsp;<input id="image_mirror" type="checkbox" onClick="return image_mirror_onclick()"><script language="javascript">document.write(top.str_mirror);</script></td>
+			</tr>
+			<tr height = 15><td width = "65" style="font-size:12px; color:#004080">&nbsp;<script language="javascript">document.write(top.str_resolution);</script></td><td align = center><SELECT style="WIDTH: 95px" id=resolution LANGUAGE=javascript onChange="return resolution_onchange()"><OPTION selected value="8">320*240</OPTION><OPTION value="32">640*480</OPTION></SELECT></td></tr>
+			<tr height = 15><td style="font-size:12px; color:#004080">&nbsp;<script language="javascript">document.write(top.str_mode);</script></td><td align = center><SELECT style="WIDTH: 95px" id=mode LANGUAGE=javascript onChange="return mode_onchange()"><OPTION selected value="0">50 HZ</OPTION><OPTION value="1">60 HZ</OPTION><OPTION value="2"><script language="javascript">document.write(top.str_outdoor);</script></OPTION></SELECT></td></tr>
+			<tr height = 15><td style="font-size:12px; color:#004080">&nbsp;<script language="javascript">document.write(top.str_maxvideorate);</script></td><td align = center><SELECT style="WIDTH: 95px" id=MaxVideoRate LANGUAGE=javascript onChange="return MaxVideoRate_onchange()"><OPTION value="0"><script language="javascript">document.write(top.str_max);</script></OPTION><OPTION selected value="1">20 fps</OPTION><OPTION value="3">15 fps</OPTION><OPTION value="6">10 fps</OPTION><OPTION value="11">5 fps</OPTION><OPTION value="12">4 fps</OPTION><OPTION value="13">3 fps</OPTION><OPTION value="14">2 fps</OPTION><OPTION value="15">1 fps</OPTION><OPTION value="17">1/2 fps</OPTION><OPTION value="19">1/3 fps</OPTION><OPTION value="21">1/4 fps</OPTION><OPTION value="23">1/5 fps</OPTION></SELECT></td></tr>
+			
+			<tr height = 15><td style="font-size:12px; color:#004080">&nbsp;<script language="javascript">document.write(top.str_brightness);</script></td><td align = center>
+				<table border=0 cellpadding=0 cellspacing=0><tr>
+					<td><img id="plus_brightness" src="images/plus_up.gif" onClick="return plus_brightness()" onMouseUp="this.src=plus_up.src;" onMouseDown="this.src=plus_down.src;"></td>
+					<td>&nbsp;<input id = brightness readonly maxLength = "2" style="WIDTH: 30px; HEIGHT: 18px" size=2>&nbsp;</td>
+					<td><img id="minus_brightness" src="images/minus_up.gif" onClick="return minus_brightness()" onMouseUp="this.src=minus_up.src;" onMouseDown="this.src=minus_down.src;"></td>
+				</tr></table>
+			</td></tr>
+			<tr height = 15><td style="font-size:12px; color:#004080">&nbsp;<script language="javascript">document.write(top.str_contrast);</script></td><td align = center>
+				<table border=0 cellpadding=0 cellspacing=0><tr>
+					<td><img id="plus_contrast" src="images/plus_up.gif" onClick="return plus_contrast()" onMouseUp="this.src=plus_up.src;" onMouseDown="this.src=plus_down.src;"></td>
+					<td>&nbsp;<input id = contrast readonly maxLength = "1" style="WIDTH: 30px; HEIGHT: 18px" size=2>&nbsp;</td>
+					<td><img id="minus_contrast" src="images/minus_up.gif" onClick="return minus_contrast()" onMouseUp="this.src=minus_up.src;" onMouseDown="this.src=minus_down.src;"></td>
+				</tr></table>
+			</td></tr>
+			<tr>
+                            <td height="15" colspan="2" align="center">
+                            <A style="font-size:12px; color:004080"><script language="javascript">document.write(top.str_preset)</script></A>&nbsp;<A  style="font-size:12px; color:004080" href="javascript:set_preset()"><script language="javascript">document.write(top.str_set1);</script></A><select id="ptz_set_preset"><OPTION value="30">1</OPTION><OPTION value="32">2</OPTION><OPTION value="34">3</OPTION><OPTION value="36">4</OPTION><OPTION value="38">5</OPTION><OPTION value="40">6</OPTION><OPTION value="42">7</OPTION><OPTION value="44">8</OPTION></select><A style="font-size:12px; color:004080" href="javascript:go_preset()"><script language="javascript">document.write(top.str_go);</script></A></td></tr>
+                        <tr>
+                            <td height="15" colspan="2" align="center">
+                                 <A id="default_link" href="javascript:default_all();" style="font-size:12px; color:004080"><script language="javascript">document.write(top.str_default);</script></A></td></tr>
+		</table></td></tr>
+		
+		<tr height="20"><td align = center valign="bottom" bgcolor=#415173 class="mid03" onMouseOver="return mouseover_bgcolor(this)" onMouseOut="return mouseout(this)"><a id="administrator_link" href="javascript:administrator();" style="font-size:13px; color:f5ffff" disabled="true" onMouseOver="return mouseover_font(this)" onMouseOut="return mouseout(this)"><strong><font face="Arial">
+          <script language="javascript">document.write(top.str_4administrator);</script>
+        </font></strong></a></td></tr>
+		
+	</table></td>
+	<td width = 642 height = 480 bgcolor = black align = center valign = middle class="rect_left">
+	<div>
+		<span><OBJECT id=ipcam name = 0 style="LEFT: 0px; TOP: 0px" codeBase="codebase/DVM_IPCam2.ocx#version=0,0,0,36" height=240 width=320 classid=clsid:A4150320-98EC-4DB6-9BFB-EBF4B6FBEB16 VIEWASTEXT><PARAM NAME="_Version" VALUE="65536"><PARAM NAME="_ExtentX" VALUE="8467"><PARAM NAME="_ExtentY" VALUE="6350"><PARAM NAME="_StockProps" VALUE="0"></OBJECT></span>
+		<span><OBJECT id=ipcam name = 1 style="LEFT: 0px; TOP: 0px" codebase="codebase/DVM_IPCam2.ocx#version=0,0,0,36" height=0 width=0 classid=clsid:A4150320-98EC-4DB6-9BFB-EBF4B6FBEB16 VIEWASTEXT><PARAM NAME="_Version" VALUE="65536"><PARAM NAME="_ExtentX" VALUE="8467"><PARAM NAME="_ExtentY" VALUE="6350"><PARAM NAME="_StockProps" VALUE="0"></OBJECT></span>
+		<span><OBJECT id=ipcam name = 2 style="LEFT: 0px; TOP: 0px" codebase="codebase/DVM_IPCam2.ocx#version=0,0,0,36" height=0 width=0 classid=clsid:A4150320-98EC-4DB6-9BFB-EBF4B6FBEB16 VIEWASTEXT><PARAM NAME="_Version" VALUE="65536"><PARAM NAME="_ExtentX" VALUE="8467"><PARAM NAME="_ExtentY" VALUE="6350"><PARAM NAME="_StockProps" VALUE="0"></OBJECT></span>
+		
+		<span><OBJECT id=ipcam name = 3 style="LEFT: 0px; TOP: 0px" codebase="codebase/DVM_IPCam2.ocx#version=0,0,0,36" height=0 width=0 classid=clsid:A4150320-98EC-4DB6-9BFB-EBF4B6FBEB16 VIEWASTEXT><PARAM NAME="_Version" VALUE="65536"><PARAM NAME="_ExtentX" VALUE="8467"><PARAM NAME="_ExtentY" VALUE="6350"><PARAM NAME="_StockProps" VALUE="0"></OBJECT></span>
+		
+		<span><OBJECT id=ipcam name = 4 style="LEFT: 0px; TOP: 0px" codeBase="codebase/DVM_IPCam2.ocx#version=0,0,0,36" height=0 width=0 classid=clsid:A4150320-98EC-4DB6-9BFB-EBF4B6FBEB16 VIEWASTEXT><PARAM NAME="_Version" VALUE="65536"><PARAM NAME="_ExtentX" VALUE="8467"><PARAM NAME="_ExtentY" VALUE="6350"><PARAM NAME="_StockProps" VALUE="0"></OBJECT></span>
+		<span><OBJECT id=ipcam name = 5 style="LEFT: 0px; TOP: 0px" codebase="codebase/DVM_IPCam2.ocx#version=0,0,0,36" height=0 width=0 classid=clsid:A4150320-98EC-4DB6-9BFB-EBF4B6FBEB16 VIEWASTEXT><PARAM NAME="_Version" VALUE="65536"><PARAM NAME="_ExtentX" VALUE="8467"><PARAM NAME="_ExtentY" VALUE="6350"><PARAM NAME="_StockProps" VALUE="0"></OBJECT></span>
+		
+		<span><OBJECT id=ipcam name = 6 style="LEFT: 0px; TOP: 0px" codebase="codebase/DVM_IPCam2.ocx#version=0,0,0,36" height=0 width=0 classid=clsid:A4150320-98EC-4DB6-9BFB-EBF4B6FBEB16 VIEWASTEXT><PARAM NAME="_Version" VALUE="65536"><PARAM NAME="_ExtentX" VALUE="8467"><PARAM NAME="_ExtentY" VALUE="6350"><PARAM NAME="_StockProps" VALUE="0"></OBJECT></span>
+		<span><OBJECT id=ipcam name = 7 style="LEFT: 0px; TOP: 0px" codebase="codebase/DVM_IPCam2.ocx#version=0,0,0,36" height=0 width=0 classid=clsid:A4150320-98EC-4DB6-9BFB-EBF4B6FBEB16 VIEWASTEXT><PARAM NAME="_Version" VALUE="65536"><PARAM NAME="_ExtentX" VALUE="8467"><PARAM NAME="_ExtentY" VALUE="6350"><PARAM NAME="_StockProps" VALUE="0"></OBJECT></span>
+		<span><OBJECT id=ipcam name = 8 style="LEFT: 0px; TOP: 0px" codebase="codebase/DVM_IPCam2.ocx#version=0,0,0,36" height=0 width=0 classid=clsid:A4150320-98EC-4DB6-9BFB-EBF4B6FBEB16 VIEWASTEXT><PARAM NAME="_Version" VALUE="65536"><PARAM NAME="_ExtentX" VALUE="8467"><PARAM NAME="_ExtentY" VALUE="6350"><PARAM NAME="_StockProps" VALUE="0"></OBJECT></span>
+		
+	</div>	
+	</td>
+</tr></table>
+
+<img id = full_screen_up src = images/full_screen_up.GIF style = "width:0; height:0; visibility:hidden">
+<img id = full_screen_down src = images/full_screen_down.GIF style = "width:0; height:0; visibility:hidden">
+
+<img id = plus_up src = images/plus_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = plus_down src = images/plus_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = minus_up src = images/minus_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = minus_down src = images/minus_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = play_up src = images/play_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = play_down src = images/play_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = filePop_no1 src = images/filepop_no.gif style = "width:0; height:0; visibility:hidden">
+<img id = filePop_yes1 src = images/filepop_yes.gif style = "width:0; height:0; visibility:hidden">
+<img id = stop_up src = images/stop_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = stop_down src = images/stop_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = stop_up_small src = images/stop_up_small.gif style = "width:0; height:0; visibility:hidden">
+<img id = stop_down_small src = images/stop_down_small.gif style = "width:0; height:0; visibility:hidden">
+<img id = snapshot_up src = images/snapshot_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = snapshot_down src = images/snapshot_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = audio_off src = images/audio_off.gif style = "width:0; height:0; visibility:hidden">
+<img id = audio_up src = images/audio_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = audio_down src = images/audio_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = talk_off src = images/talk_off.gif style = "width:0; height:0; visibility:hidden">
+<img id = talk_up src = images/talk_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = talk_down src = images/talk_down.gif style = "width:0; height:0; visibility:hidden">
+
+<img id = record_off src = images/record_off.gif style = "width:0; height:0; visibility:hidden">
+<img id = record_up src = images/record_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = record_down src = images/record_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = gray_ball src = images/gray.gif style = "width:0; height:0; visibility:hidden">
+<img id = red_ball src = images/red.gif style = "width:0; height:0; visibility:hidden">
+<img id = green_ball src = images/green.gif style = "width:0; height:0; visibility:hidden">
+<img id = yellow_ball src = images/yellow.gif style = "width:0; height:0; visibility:hidden">
+<img id = center_up src = images/center_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = center_down src = images/center_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = up_up src = images/up_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = up_down src = images/up_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = down_up src = images/down_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = down_down src = images/down_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = left_up src = images/left_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = left_down src = images/left_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = right_up src = images/right_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = right_down src = images/right_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = leftup_up src = images/leftup_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = leftup_down src = images/leftup_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = leftdown_up src = images/leftdown_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = leftdown_down src = images/leftdown_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = rightup_up src = images/rightup_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = rightup_down src = images/rightup_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = rightdown_up src = images/rightdown_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = rightdown_down src = images/rightdown_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = vpatrol_up src = images/vpatrol_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = vpatrol_down src = images/vpatrol_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = hpatrol_up src = images/hpatrol_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = hpatrol_down src = images/hpatrol_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = switchon_up src = images/switchon_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = switchon_down src = images/switchon_down.gif style = "width:0; height:0; visibility:hidden">
+<img id = switchoff_up src = images/switchoff_up.gif style = "width:0; height:0; visibility:hidden">
+<img id = switchoff_down src = images/switchoff_down.gif style = "width:0; height:0; visibility:hidden"><object id = sound_player CLASSID="CLSID:6BF52A52-394A-11d3-B153-00C04F79FAA6"
+	type="application/x-oleobject"	width="0" height="0" 
+	style="position:relative;left:0px; top:0px;width:0px;height:0px;"><param name="url" value="images/alarm.wav"><param name="autoStart" value="false"><param name="playCount" value="1"><param name="rate" value="1"></OBJECT>
+</body>
+</html>

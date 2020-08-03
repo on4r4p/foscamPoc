@@ -1,0 +1,188 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="style.css" type="text/css">
+<title></title>
+<style>
+BODY {
+	MARGIN: 0px; BACKGROUND-COLOR: #848284;  font: arial;
+}
+</style>
+</head>
+<script>
+var reboot_seconds=0;
+function devicestatus()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='none';
+	parent.main.location='status.htm';
+}
+function livevideo()
+{
+	devicemanagement_zone.style.display='none';
+	parent.main.location='live.htm';
+	camera_zone.location='camera.htm';
+	livevideo_zone.style.display='';
+}
+function devicemamagement()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='alias.htm';
+}
+
+function datetime()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='datetime.htm';
+}
+
+function user()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='user.htm';
+}
+
+function ip()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='ip.htm';
+}
+
+function wireless()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='wireless.htm';
+}
+
+function adsl()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='adsl.htm';
+}
+
+function upnp()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='upnp.htm';
+}
+
+function ddns()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='ddns.htm';
+}
+
+function mail()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='mail.htm';
+}
+
+function log()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='log.htm';
+}
+
+function ftp()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='ftp.htm';
+}
+
+function alarm()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='alarm.htm';
+}
+
+function upgrade()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='upgrade.htm';
+}
+
+function ptz()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='ptz.htm';
+}
+
+
+
+function backup()
+{
+	livevideo_zone.style.display='none';
+	devicemanagement_zone.style.display='';
+	parent.main.location='backup.htm';
+}
+
+function reboot()
+{
+	if (confirm(top.str_sure_reboot))
+	{
+		reboot_seconds=30;
+		parent.main.location='reboot.cgi?user='+top.user+'&pwd='+top.pwd+'&next_url=reboot.htm';
+	}
+}
+function restore_factory()
+{
+	if (confirm(top.str_sure_restore))
+	{
+		reboot_seconds=30;
+		parent.main.location='restore_factory.cgi?user='+top.user+'&pwd='+top.pwd+'&next_url=reboot.htm';
+	}
+}
+</script>
+<body>
+<table width="172" height="480"><tr><td width="172" height="480" class="bc2 v1 pad1"><table width="160" class="mid01" height="470">
+<table width="172" height="480"><tr><td width="172" height="480" class="bc2 v1 pad1"><table width="160" class="mid01" height="470">
+	<tr height="20"><td align = center valign="bottom" bgcolor="#415173" class="mid06"><a href="javascript:devicestatus()"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_devicestatus);</script></font></strong></a></td></tr>
+	<tr height="20"><td align = center valign="bottom" bgcolor="#415173" class="mid06"><a href="javascript:livevideo()"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_livevideo);</script></font></strong></a></td></tr>
+	<tr><td><table id="livevideo_zone" width="160"  class="h2 f12" style="display:none"><tr><td><iframe marginheight="0" marginwidth="0" width="160" height="320" frameborder="0" scrolling="no" name="camera_zone" src="camera.htm"></iframe></td></tr>
+	                                                                                   <tr height="20"><td><a href="javascript:camera_zone.location.reload()"><script>document.write(top.str_refreshcameraparams);</script></a></td></tr>
+	                                                                                   <tr height="20"><td><a href="live.htm" name="main"><script>document.write(top.str_refreshvideo);</script></a></td></tr>
+	                                                                                   <tr height="20"><td><a href="snapshot.cgi" target="_blank"><script>document.write(top.str_snapshot);</script></a></td></tr>
+	                                                                                   
+	</table></td></tr>
+	<tr height="20"><td align = center valign="bottom" bgcolor="#415173" class="mid06"><a href="javascript:devicemamagement()"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_devicemanagement);</script></font></strong></a></td></tr>
+	<tr><td class="h2 mid03"><table id="devicemanagement_zone" width="160" class="h2 v2 f12" style="display:none">
+		<tr height="10"><td style="height: 10px"> </td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:devicemamagement();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_alias_config);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:datetime();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_datetime_config);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:user();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_users_config);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:ip();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_network_config);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:wireless();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_wireless_config);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:adsl();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_adsl_config);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:upnp();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_upnp_config);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:ddns();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_ddns_config);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:mail();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_mail_config);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:ftp();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_ftp_config);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:alarm();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_alarm_config);</script></font></strong></a></td></tr>
+
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:ptz();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_ptz_config);</script></font></strong></a></td></tr>
+
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:upgrade();" name="main" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_upgrade_firmware);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:backup();" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_backup_restore);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:restore_factory();" style="font-size:11px"><strong><font face="Arial" color="#FFFFFF"><script>document.write(top.str_restore_factory);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:reboot();" style="font-size:11px;"><strong><font face="Arial" color="#FFFFFF"><script language="javascript">document.write(top.str_reboot);</script></font></strong></a></td></tr>
+		<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:log();" name="main" style="font-size:11px;"><strong><font face="Arial" color="#FFFFFF"><script language="javascript">document.write(top.str_log);</script></font></strong></a></td></tr>
+		<tr height="10"><td> </td></tr>
+	</table></td></tr>
+</table></td></tr></table>
+</body>
+</html>

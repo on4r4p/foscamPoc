@@ -1,0 +1,8 @@
+XDEFINES= -DLIBOPENSSL -DLIBFIREBIRD -DLIBIDN -DHAVE_PR29_H -DHAVE_PCRE -DLIBMYSQLCLIENT -DLIBNCP -DLIBPOSTGRES -DLIBSSH -DHAVE_MATH_H
+XLIBS= -lssl -lncp -lfbclient -lidn -lpcre -lmysqlclient -lpq -lssh -lcrypto
+XLIBPATHS=-L/usr/lib -L/usr/local/lib -L/lib -L/usr/lib/i386-linux-gnu -L/usr/lib -L/usr/lib/i386-linux-gnu
+XIPATHS= -I/usr/include/mysql
+PREFIX=/usr/local
+XHYDRA_SUPPORT=xhydra
+STRIP=strip
+

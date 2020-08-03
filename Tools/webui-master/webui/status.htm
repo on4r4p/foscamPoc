@@ -1,0 +1,199 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="style.css" type="text/css">
+<title></title>
+<style>
+BODY {
+	MARGIN: 0px; BACKGROUND-COLOR: #848284;  font: arial;
+}
+</style>
+</head>
+<script src="get_status.cgi"></script>
+<script>
+if (alias=='') alias=top.str_anonymous;
+top.alias=alias;
+top.document.title=top.str_device+'('+alias+')';
+function d1(msg)
+{
+	alarm_status_info.innerHTML='&nbsp;&nbsp;'+msg;
+}
+function d2(msg)
+{
+	ddns_status_info.innerHTML='&nbsp;&nbsp;'+msg;
+}	
+function d3(msg)
+{
+	upnp_status_info.innerHTML='&nbsp;&nbsp;'+msg;
+}	
+function body_onload()
+{
+	if (alarm_status==1)	
+		d1(top.str_motion_alarm);
+	else if (alarm_status==2)
+		d1(top.str_input_alarm);
+	else
+		d1(top.str_none);
+	switch (ddns_status)
+	{
+	case 0:
+		d2(top.str_ddns_noaction);
+		break;
+	case 1:
+		d2(top.str_ddns_waiting);
+		break;
+	case 2:
+		d2(top.str_ddns_cannotconnect);
+		break;
+	case 3:
+		url='http://'+ddns_host;
+		if (location.port!='') url+=':'+location.port;
+		d2(top.str_dyndns_ok+'&nbsp;&nbsp;'+url);
+		break;
+	case 4:
+		d2(top.str_dyndns_sys_err);
+		break;
+	case 5:
+		d2(top.str_dyndns_badauth);
+		break;
+	case 6:
+		d2(top.str_dyndns_donator);
+		break;
+	case 7:
+		d2(top.str_dyndns_notfqdn);
+		break;
+	case 8:
+		d2(top.str_dyndns_nohost);
+		break;
+	case 9:
+		d2(top.str_dyndns_yours);
+		break;
+	case 10:
+		d2(top.str_dyndns_numhost);
+		break;
+	case 11:
+		d2(top.str_dyndns_abuse);
+		break;
+	case 12:
+		d2(top.str_dyndns_server_err);
+		break;
+	case 13:
+		d2(top.str_dyndns_chat_err);
+		break;
+	case 14:
+		d2(top.str_oray_chat_err);
+		break;
+	case 15:
+		d2(top.str_oray_bad_auth);
+		break;
+	case 16:
+		d2(top.str_oray_bad_host);
+		break;
+	case 17:
+		url='';
+		if (ddns_host!='')
+		{
+			url='&nbsp;&nbsp;'+'http://'+ddns_host;
+			if (location.port!='') url=url+':'+location.port;
+		}
+		if (oray_type)
+			d2(top.str_oray_professional_ok+url);
+		else
+			d2(top.str_oray_standard_ok+url);
+		break;
+	case 18:
+		d2(top.str_ddns_ok);
+		break;
+	case 19:
+		d2(top.str_ddns_failed);
+		break;
+	case 20:
+		d2(top.str_yu_ddns_ok);
+		break;
+	case 21:
+		d2(top.str_yu_ddns_failed);
+		break;
+	case 22:
+		d2(top.str_easynx_ok);
+		break;
+	case 23:
+		d2(top.str_easynx_noauth);
+		break;
+	case 24:
+		d2(top.str_easynx_noid);
+		break;
+	case 25:
+		d2(top.str_easynx_over);
+		break;
+	case 26:
+		d2(top.str_easynx_iddisable);
+		break;
+	case 27:
+		d2(top.str_easynx_errparam);
+		break;
+	case 28:
+		d2(top.str_easynx_unknownerr);
+		break;
+	case 29:
+		url='http://'+ddns_host;
+		if (location.port!='') url+=':'+location.port;
+		d2(top.str_3322_ok+'&nbsp;&nbsp;'+url);
+		break;
+	case 30:
+		d2(top.str_3322_sys_err);
+		break;
+	case 31:
+		d2(top.str_3322_badauth);
+		break;
+	case 32:
+		d2(top.str_3322_donator);
+		break;
+	case 33:
+		d2(top.str_3322_notfqdn);
+		break;
+	case 34:
+		d2(top.str_3322_nohost);
+		break;
+	case 35:
+		d2(top.str_3322_yours);
+		break;
+	case 36:
+		d2(top.str_3322_numhost);
+		break;
+	case 37:
+		d2(top.str_3322_abuse);
+		break;
+	case 38:
+		d2(top.str_3322_server_err);
+		break;
+	case 39:
+		d2(top.str_3322_chat_err);
+		break;
+	}
+	if (upnp_status==0)
+		d3(top.str_upnp_msg0);
+	else if (upnp_status==1)
+		d3(top.str_upnp_msg1);
+	else if (upnp_status==2)
+		d3(top.str_upnp_msg2);
+	else if (upnp_status==3)
+		d3(top.str_upnp_msg3);
+	else if (upnp_status==4)
+		d3(top.str_upnp_msg4);
+	else if (upnp_status==5)
+		d3(top.str_upnp_msg5);
+}
+</script>	
+<body onLoad="body_onload()">
+<table width="640" height="480"><tr><td class="v1 pad2 bc4"><table width="100%" class="v2 f14 mid01">
+	<tr height="25"><td colspan="2" class="h2 bc1 mid02"><strong><script>document.write(top.str_devicestatus);</script></strong></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_dev_id);</script></td><td class="mid02">&nbsp;&nbsp;<script>document.write(id);</script></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_sw_ver);</script></td><td class="mid02">&nbsp;&nbsp;<script>document.write(sys_ver);</script></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_aw_ver);</script></td><td class="mid02">&nbsp;&nbsp;<script>document.write(app_ver);</script></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_alias);</script></td><td class="mid02">&nbsp;&nbsp;<script>document.write(alias);</script></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_alarmstatus);</script></td><td id="alarm_status_info" class="mid02">&nbsp;&nbsp;</td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ddns_status);</script></td><td id="ddns_status_info" class="mid02">&nbsp;&nbsp;</td></tr>
+	<tr height="25"><td class="bc2 mid05">&nbsp;&nbsp;<script>document.write(top.str_upnp_status);</script></td><td id="upnp_status_info" class="mid03">&nbsp;&nbsp;</td></tr>
+</table></td></tr></table>
+</body>
+</html>

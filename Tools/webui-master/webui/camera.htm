@@ -1,0 +1,468 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="style.css" type="text/css">
+<script type="text/javascript" src="jquery.js"></script>  
+<title></title>
+</head>
+<style>
+body{
+  font: arial;
+}
+</style>
+<script src="get_camera_params.cgi"></script>
+<script>
+var R320_240=8;
+var R640_480=32;
+var ptz_type=0;	
+var PTZ_STOP=1;
+var TILT_UP=0;
+var TILT_UP_STOP=1;
+var TILT_DOWN=2;
+var TILT_DOWN_STOP=3;
+var PAN_LEFT=4;
+var PAN_LEFT_STOP=5;
+var PAN_RIGHT=6;
+var PAN_RIGHT_STOP=7;
+var PTZ_LEFT_UP=90;
+var PTZ_RIGHT_UP=91;
+var PTZ_LEFT_DOWN=92;
+var PTZ_RIGHT_DOWN=93;
+var PTZ_CENTER=25;
+var PTZ_VPATROL=26;
+var PTZ_VPATROL_STOP=27;
+var PTZ_HPATROL=28;
+var PTZ_HPATROL_STOP=29;
+var PTZ_PELCO_D_HPATROL=20;
+var PTZ_PELCO_D_HPATROL_STOP=21;
+var IO_ON=94;
+var IO_OFF=95;
+
+
+function comm_write(data)
+{
+    action_zone.location='comm_write.cgi?port=0&baud=4098&bytes=2&data='+data
+}
+
+function decoder_control(command)
+{
+	action_zone.location='decoder_control.cgi?command='+command;
+}
+function camera_control(param,value)
+{
+	action_zone.location='camera_control.cgi?param='+param+'&value='+value;
+}
+function set_flip()
+{
+	if (image_reversal.checked)
+		flip|=1;
+	else
+		flip&=2;
+	if (image_mirror.checked)
+		flip|=2;
+	else
+		flip&=1;	
+	camera_control(5,flip);
+}
+function up_onmousedown() 
+{
+	(flip&0x01)?decoder_control(TILT_DOWN):decoder_control(TILT_UP);
+}
+function up_onmouseup() 
+{
+	if (!ptz_type)
+		decoder_control(PTZ_STOP);
+	else if (flip&0x01)
+		decoder_control(TILT_DOWN_STOP);
+	else	
+		decoder_control(TILT_UP_STOP);
+}
+function down_onmousedown() 
+{
+	(flip&0x01)?decoder_control(TILT_UP):decoder_control(TILT_DOWN);
+}
+function down_onmouseup() 
+{
+	if (!ptz_type)
+		decoder_control(PTZ_STOP);
+	else if (flip&0x01)
+		decoder_control(TILT_UP_STOP);
+	else
+		decoder_control(TILT_DOWN_STOP);	
+}
+function left_onmousedown() 
+{
+	(flip&0x02)?decoder_control(PAN_RIGHT):decoder_control(PAN_LEFT);
+}
+function left_onmouseup() 
+{
+	if (!ptz_type)
+		decoder_control(PTZ_STOP);
+	else if (flip&0x02)
+		decoder_control(PAN_RIGHT_STOP);
+	else	
+		decoder_control(PAN_LEFT_STOP);	
+}
+function right_onmousedown() 
+{
+	(flip&0x02)?decoder_control(PAN_LEFT):decoder_control(PAN_RIGHT);
+}
+function right_onmouseup() 
+{
+	if (!ptz_type)
+		decoder_control(PTZ_STOP);
+	else if (flip&0x02)
+		decoder_control(PAN_LEFT_STOP);
+	else	
+		decoder_control(PAN_RIGHT_STOP);
+}
+function leftup_onmousedown() 
+{
+	if (ptz_type)
+		return;
+	if ((flip&0x03)==0x03)
+		decoder_control(PTZ_RIGHT_DOWN);
+	else if (flip&0x02)
+		decoder_control(PTZ_RIGHT_UP);
+	else if (flip&0x01)
+		decoder_control(PTZ_LEFT_DOWN);
+	else		
+		decoder_control(PTZ_LEFT_UP);
+}
+function leftup_onmouseup() 
+{
+	if (!ptz_type) decoder_control(PTZ_STOP);
+}
+function rightup_onmousedown() 
+{
+	if (ptz_type)
+		return;
+	if ((flip&0x03)==0x03)
+		decoder_control(PTZ_LEFT_DOWN);
+	else if (flip&0x02)
+		decoder_control(PTZ_LEFT_UP);
+	else if (flip&0x01)
+		decoder_control(PTZ_RIGHT_DOWN);
+	else		
+		decoder_control(PTZ_RIGHT_UP);
+}
+function rightup_onmouseup() 
+{
+	if (!ptz_type) decoder_control(PTZ_STOP);
+}
+function leftdown_onmousedown() 
+{
+	if (ptz_type)
+		return;
+	if ((flip&0x03)==0x03)
+		decoder_control(PTZ_RIGHT_UP);
+	else if (flip&0x02)
+		decoder_control(PTZ_RIGHT_DOWN);
+	else if (flip&0x01)
+		decoder_control(PTZ_LEFT_UP);
+	else		
+		decoder_control(PTZ_LEFT_DOWN);
+}
+function leftdown_onmouseup() 
+{
+	if (!ptz_type) decoder_control(PTZ_STOP);
+}
+function rightdown_onmousedown() 
+{
+	if (ptz_type)
+		return;
+	if ((flip&0x03)==0x03)
+		decoder_control(PTZ_LEFT_UP);
+	else if (flip&0x02)
+		decoder_control(PTZ_LEFT_DOWN);
+	else if (flip&0x01)
+		decoder_control(PTZ_RIGHT_UP);
+	else		
+		decoder_control(PTZ_RIGHT_DOWN);
+}
+function rightdown_onmouseup() 
+{
+	if (!ptz_type) decoder_control(PTZ_STOP);
+}
+function center_onclick() 
+{
+	if (!ptz_type) decoder_control(PTZ_CENTER);
+}
+function vpatrol_onclick() 
+{
+	if (!ptz_type) decoder_control(PTZ_VPATROL);
+}
+function vpatrolstop_onclick() 
+{
+	if (!ptz_type) decoder_control(PTZ_VPATROL_STOP);
+}
+function hpatrol_onclick() 
+{
+	ptz_type?decoder_control(PTZ_PELCO_D_HPATROL):decoder_control(PTZ_HPATROL);
+}
+function hpatrolstop_onclick() 
+{
+	ptz_type?decoder_control(PTZ_PELCO_D_HPATROL_STOP):decoder_control(PTZ_HPATROL_STOP);
+}
+function set_resolution()
+{
+	camera_control(0,resolution_sel.value);
+	setTimeout('parent.parent.main.location.reload()',2000);
+}
+function plus_brightness()
+{
+	val=brightness_input.value;
+	if (val++<15)
+	{
+		brightness_input.value=val;
+		camera_control(1,val*16);
+	}
+}
+function minus_brightness()
+{
+	val=brightness_input.value;
+	if (val-->0)
+	{
+		brightness_input.value=val;
+		camera_control(1,val*16);
+	}	
+}
+function plus_contrast()
+{
+	val=contrast_input.value;
+	if (val++<6)
+	{
+		contrast_input.value=val;
+		camera_control(2,val);
+	}
+}
+function minus_contrast()
+{
+	val=contrast_input.value;
+	if (val-->0)
+	{
+		contrast_input.value=val;
+		camera_control(2,val);
+	}
+}
+function body_onload()
+{
+	gocenter.title=top.str_center;
+	vpatrol.title=top.str_vertical_patrol;
+	vpatrolstop.title=top.str_stop_vertical_patrol;
+	hpatrol.title=top.str_horizon_patrol;
+	hpatrolstop.title=top.str_stop_horizon_patrol;
+	switchon.title=top.str_switchon;
+	switchoff.title=top.str_switchoff;
+	resolution_sel.value=resolution;
+	mode_sel.value=mode;
+	brightness_input.value=Math.round(brightness / 16);
+	contrast_input.value=contrast;
+	image_reversal.checked=(flip&0x01)?true:false;
+	image_mirror.checked=(flip&0x02)?true:false;
+}
+</script>
+<body onLoad="body_onload()">
+<iframe name="action_zone" style="display:none"></iframe>
+
+
+<table width="160" class="h2 f12b">
+	
+		<tr><td colspan="2"><table width="160"><tr>
+		<td>
+			<div><img src="images/ptz1.gif"><img src="images/up_up.gif" onMouseDown="up_onmousedown()" onMouseUp="up_onmouseup()"><img src="images/ptz2.gif"></div>
+			<div><img src="images/leftup_up.gif" onMouseDown="leftup_onmousedown()" onMouseUp= "leftup_onmouseup()"><img src="images/ptz3.gif"><img src="images/rightup_up.gif" onMouseDown= "rightup_onmousedown()" onMouseUp="rightup_onmouseup()"></div>
+			<div><img src="images/left_up.gif" onMouseDown="left_onmousedown()" onMouseUp="left_onmouseup()"><img id="gocenter" src="images/center_up.gif" onClick="center_onclick()"><img src="images/right_up.gif" onMouseDown="right_onmousedown()" onMouseUp="right_onmouseup()"></div>
+			<div><img src="images/leftdown_up.gif" onMouseDown="leftdown_onmousedown()" onMouseUp="leftdown_onmouseup()"><img src="images/down_up.gif" onMouseDown="down_onmousedown()" onMouseUp="down_onmouseup()"><img src="images/rightdown_up.gif" onMouseDown="rightdown_onmousedown()" onMouseUp="rightdown_onmouseup()"></div>
+		</td>
+		<td>
+			<div><img id="vpatrol" src="images/vpatrol_up.gif" onClick="vpatrol_onclick()">&nbsp;<img id="vpatrolstop" src="images/stop_up.gif" onClick="vpatrolstop_onclick()"></div>
+			<div><img id="hpatrol" src="images/hpatrol_up.gif" onClick="hpatrol_onclick()">&nbsp;<img id="hpatrolstop" src="images/stop_up.gif" onClick="hpatrolstop_onclick()"></div>
+			<div><img id="switchon" src="images/switchon_up.gif" onClick="decoder_control(IO_ON)">&nbsp;<img id="switchoff" src="images/switchoff_up.gif" onClick="decoder_control(IO_OFF)"></div>
+		</td>	
+		
+	</tr></table></td></tr>
+	
+	
+	
+	<tr height="5"><td> </td></tr>
+	<tr height="15"><td colspan="2"><input id="image_reversal" type="checkbox" onClick="set_flip()"><script>document.write(top.str_reversal);</script>&nbsp;&nbsp;<input id="image_mirror" type="checkbox" onClick="set_flip()"><script>document.write(top.str_mirror);</script></td></tr>
+	<tr height="5"><td> </td></tr>
+	<tr height="15"><td width="65" class="h1">&nbsp;<script>document.write(top.str_resolution);</script></td><td><SELECT id="resolution_sel" class="s4" onChange="set_resolution()"><OPTION value="8">320*240</OPTION><OPTION value="32">640*480</OPTION></SELECT></td></tr>
+	<tr height="15"><td class="h1">&nbsp;<script>document.write(top.str_mode);</script></td><td><SELECT class="s4" id="mode_sel" onChange="camera_control(3,value)"><OPTION value="0">50 HZ</OPTION><OPTION value="1">60 HZ</OPTION><OPTION value="2"><script>document.write(top.str_outdoor);</script></OPTION></SELECT></td></tr>
+	<tr height="15"><td class="h1">&nbsp;<script>document.write(top.str_brightness);</script></td><td><table class="h2"><tr><td><img src="images/plus_up.gif" onClick="plus_brightness()"></td><td><input id="brightness_input" readonly maxLength="2" class="s3" size="2"></td><td><img src="images/minus_up.gif" onClick="minus_brightness()"></td></tr></table></td></tr>
+	<tr height="15"><td class="h1">&nbsp;<script>document.write(top.str_contrast);</script></td><td><table class="h2"><tr><td><img src="images/plus_up.gif" onClick="plus_contrast()"></td><td><input id="contrast_input" readonly maxLength="1" class="s3" size="2"></td><td><img src="images/minus_up.gif" onClick="minus_contrast()"></td></tr></table></td></tr>
+	
+	
+
+	
+	
+	
+</table>
+<font size="-2">
+<textarea disabled id="content" rows="6" cols="23" style = "font-size: 10px" ></textarea>
+</font size>
+
+    <input onkeypress="javascript:return false;" id="txtChar" style="width:160px" onkeydown="javascript:return displayKeyCode(event)" type="text" name="txtChar">
+
+
+
+<script>  
+        function show()  
+        {  
+            
+			jQuery.get('status.txt', function(data) {
+				var tempArray = data.split("");
+				var tempText = "Left Engine Dir.: " + tempArray[0] + "\r\nRight Engine Dir.: " + tempArray[1] + "\r\nLeft Engine Speed: " + tempArray[2] + "\r\nRight Engine Speed: " + tempArray[3] + "\r\nBattery Level: " + tempArray[4] + "\r\nDistance to object: " + tempArray[5] + tempArray[6] + "\r\nLast Command: " + tempArray[7];
+				document.getElementById('content').value = tempText;
+			});
+		}  
+      
+		$(document).ready(function(){  
+            show();  
+            setInterval('show()',1000);  
+        });  
+</script>  
+
+<script language="Javascript">
+
+  function isEnterKey(evt)
+  {
+      var charCode = (evt.which) ? evt.which : event.keyCode
+      // if not a digit or arrow key abort
+      if ( charCode == 13) {
+			return true
+      } else {
+			return false
+      }
+  }
+
+</script>
+
+
+
+
+<script language="javascript">
+
+ function displayKeyCode(evt)
+ {
+	var textBox = getObject('txtChar');
+	 var charCode = (evt.which) ? evt.which : event.keyCode
+	 textBox.value = String.fromCharCode(charCode);
+	      
+     if (charCode == 32) {
+        textBox.value = "STOP"; // space
+        comm_write("$S");
+     }
+     
+     if (charCode == 37) {
+        textBox.value = "LEFT ENGINE"; // left arrow
+        comm_write("$L");
+     }
+     if (charCode == 38) {
+        textBox.value = "FORWARD"; // up arrow
+        comm_write("$F");
+     }
+     
+     if (charCode == 39) {
+        textBox.value = "RIGHT ENGINE"; // right arrow
+        comm_write("$R");
+     }
+     
+	 if (charCode == 40) {
+        textBox.value = "BACK"; // down arrow
+        comm_write("$B");
+     }
+     
+     
+     
+     if (charCode == 8) textBox.value = "backspace"; //  backspace
+	 if (charCode == 9) textBox.value = "tab"; //  tab
+	 if (charCode == 13) textBox.value = "enter"; //  enter
+	 if (charCode == 16) textBox.value = "shift"; //  shift
+	 if (charCode == 17) textBox.value = "ctrl"; //  ctrl
+	 if (charCode == 18) textBox.value = "alt"; //  alt
+	 if (charCode == 19) textBox.value = "pause/break"; //  pause/break
+	 if (charCode == 20) textBox.value = "caps lock"; //  caps lock
+	 if (charCode == 27) textBox.value = "escape"; //  escape
+	 if (charCode == 33) textBox.value = "page up"; // page up, to avoid displaying alternate character and confusing people	         
+	 if (charCode == 34) textBox.value = "page down"; // page down
+	 if (charCode == 35) textBox.value = "end"; // end
+	 if (charCode == 36) textBox.value = "home"; // home
+	
+	 if (charCode == 45) textBox.value = "insert"; // insert
+	 if (charCode == 46) textBox.value = "delete"; // delete
+	 if (charCode == 91) textBox.value = "left window"; // left window
+	 if (charCode == 92) textBox.value = "right window"; // right window
+	 if (charCode == 93) textBox.value = "select key"; // select key
+	 if (charCode == 96) textBox.value = "numpad 0"; // numpad 0
+	 if (charCode == 97) textBox.value = "numpad 1"; // numpad 1
+	 if (charCode == 98) textBox.value = "numpad 2"; // numpad 2
+	 if (charCode == 99) textBox.value = "numpad 3"; // numpad 3
+	 if (charCode == 100) textBox.value = "numpad 4"; // numpad 4
+	 if (charCode == 101) textBox.value = "numpad 5"; // numpad 5
+	 if (charCode == 102) textBox.value = "numpad 6"; // numpad 6
+	 if (charCode == 103) textBox.value = "numpad 7"; // numpad 7
+	 if (charCode == 104) textBox.value = "numpad 8"; // numpad 8
+	 if (charCode == 105) textBox.value = "numpad 9"; // numpad 9
+	 if (charCode == 106) textBox.value = "multiply"; // multiply
+	 if (charCode == 107) textBox.value = "add"; // add
+	 if (charCode == 109) textBox.value = "subtract"; // subtract
+	 if (charCode == 110) textBox.value = "decimal point"; // decimal point
+	 if (charCode == 111) textBox.value = "divide"; // divide
+	 if (charCode == 112) textBox.value = "F1"; // F1
+	 if (charCode == 113) textBox.value = "F2"; // F2
+	 if (charCode == 114) textBox.value = "F3"; // F3
+	 if (charCode == 115) textBox.value = "F4"; // F4
+	 if (charCode == 116) textBox.value = "F5"; // F5
+	 if (charCode == 117) textBox.value = "F6"; // F6
+	 if (charCode == 118) textBox.value = "F7"; // F7
+	 if (charCode == 119) textBox.value = "F8"; // F8
+	 if (charCode == 120) textBox.value = "F9"; // F9
+	 if (charCode == 121) textBox.value = "F10"; // F10
+	 if (charCode == 122) textBox.value = "F11"; // F11
+	 if (charCode == 123) textBox.value = "F12"; // F12
+	 if (charCode == 144) textBox.value = "num lock"; // num lock
+	 if (charCode == 145) textBox.value = "scroll lock"; // scroll lock
+	 if (charCode == 186) textBox.value = ";"; // semi-colon
+	 if (charCode == 187) textBox.value = "="; // equal-sign
+	 if (charCode == 188) textBox.value = ","; // comma
+	 if (charCode == 189) textBox.value = "-"; // dash
+	 if (charCode == 190) textBox.value = "."; // period
+	 if (charCode == 191) textBox.value = "/"; // forward slash
+	 if (charCode == 192) textBox.value = "`"; // grave accent
+	 if (charCode == 219) textBox.value = "["; // open bracket
+	 if (charCode == 220) textBox.value = "\\"; // back slash
+	 if (charCode == 221) textBox.value = "]"; // close bracket
+	 if (charCode == 222) textBox.value = "'"; // single quote
+
+	 var lblCharCode = getObject('spnCode');
+	lblCharCode.innerHTML = 'KeyCode:  ' + charCode;
+
+	return false;
+
+ }
+ function getObject(obj)
+  {
+	  var theObj;
+	  if (document.all) {
+		  if (typeof obj=='string') {
+			  return document.all(obj);
+		  } else {
+			  return obj.style;
+		  }
+	  }
+	  if (document.getElementById) {
+		  if (typeof obj=='string') {
+			  return document.getElementById(obj);
+		  } else {
+			  return obj.style;
+		  }
+	  }
+	  return null;
+  }
+
+</script>
+
+</body>
+</html>

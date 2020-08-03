@@ -1,0 +1,255 @@
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<title>jQuery File Upload Demo</title>
+<script type="text/javascript" src="jquery.js"></script>  
+</head>
+<body>
+<iframe name="action_zone" style="display:none"></iframe>
+<textarea disabled id="avr_log" rows="6" cols="23" style = "font-size: 10px" ></textarea>
+Timeout:
+<textarea  id="timeout" rows="1" cols="6" style = "font-size: 10px" ></textarea>
+<input type="submit" value="Update firmware" onClick="updateFirmware()" id="click">
+
+
+
+
+<style>
+  #byte_content {
+    margin: 5px 0;
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  #byte_range { margin-top: 5px; }
+</style>
+
+<input type="file" id="files" name="file" /> Read bytes: 
+
+<div id="byte_range"></div>
+
+
+
+
+<script>  
+        /*
+		Function that shows status of AVR controller
+		It reads periodically the data from file "console"
+		Which is filled by the command string "./avrcat console STATUS_OF_AVR"
+		There is a program "avrcat" which is located in /home directory and that program 
+		write any data in any file in /home directory by the command "./avrcat file_name any_data"
+		So during the updating of firmware AVR writes there the number of received packet
+		The counting of packets starts from 0, "0" in that file allows to Upload script start the uploading
+		*/
+		$.ajaxSetup({cache: false});
+
+		function show_status()  
+        {  
+            jQuery.get('console', function(data) {
+				document.getElementById('avr_log').value = data;
+				avr_log_console = data;
+			});
+		} 
+		
+		$(document).ready(function(){  
+            show_status();  
+            setInterval('show_status()',1000);  
+        }); 
+</script>  
+
+
+
+
+<script>
+	
+	var file;				//uploaded file with firmware
+	var avr_log_console;	//AVR log console
+	
+	var packets;			//Total number of packets to be sent
+	var restOfBytes;		//The reminder of the division of the file size by the size of one packet i
+							//In the same time - length of the last packet
+	
+	var attempts = 0;  		//Count number of attempts
+	var packetNumber = 1;	//The count number of packets, starts from 1
+	
+	var timerMulti;	//Timer which sends the packets periodically
+	
+	//const SENDING_TIMEOUT = 2000; //Time out in milliseconds for the timer	
+	const PACKET_LENGTH = 128; //Length of the packet						
+	const MAX_ATTEMPTS = 5; //Maximum attempts for sending
+	
+	
+  
+  
+function readFirmwareFile () {
+  	//Function reads the firmware file
+	var files = document.getElementById('files').files;
+	if (!files.length) {
+		alert('Please select a file!');
+		return;
+    }
+	file = files[0];
+	//calculate quantity of packets and the length of the last packet
+	if (file != undefined ) {
+		restOfBytes = file.size%PACKET_LENGTH; //calculate the syze of the last packet (it could be not 128)
+		packets = Math.ceil(file.size/PACKET_LENGTH) //calculate quantity of packets
+	}
+};
+	
+function updateFirmware () {
+	//Send the command "$U" that initiate firmware updating on AVR
+	//action_zone.location='comm_write.cgi?port=0&baud=4098&bytes=2&data=$U'
+	
+	//Attempt to read Firmware file
+	attempts = 0;
+	readFirmwareFile();
+	//Do AVR ready to get firmware data?
+	//Check the content of "console" file
+	//If "0" - can update, not "0" - AVR is not ready!
+	
+	if ( parseInt( avr_log_console ) == 0 ) {
+		timerMulti = window.setInterval( "sendPacket();", document.getElementById('timeout').value);    
+	}
+	else {
+		alert( "AVR is not ready to be updated" );
+	}
+};
+  
+function sendPacket() {
+    var	startByte;   		//start byte of the blob which will be sent to AVR
+	var endByte = -1;     	//Last byte which will be sent to AVR
+	
+	
+	var packet4Sending;		//Packet for sending, consist of start indicator "$"
+							//Count number of packet, length of packet, 2 bytes CRC, bytes * PACKET_LENGTH
+	
+	if (attempts != MAX_ATTEMPTS) {
+		if (parseInt(avr_log_console) == packets) {
+			//Last packet was succesfully sent
+			alert("Firware succesfully updated");
+			window.clearTimeout(timerMulti);
+		}
+		else if (parseInt(avr_log_console) < packetNumber ) {
+			startByte = packetNumber * PACKET_LENGTH - PACKET_LENGTH;
+			var bytesToBeSent;
+			//Check the last packet
+			if ( packetNumber == packets && restOfBytes != 0) {
+				//Last packet 
+				endByte = packetNumber * PACKET_LENGTH - PACKET_LENGTH + restOfBytes; 
+				bytesToBeSent = restOfBytes;
+			}
+			else {
+				//General packet
+				endByte = packetNumber * PACKET_LENGTH - 1; 
+				bytesToBeSent = PACKET_LENGTH;
+			}
+     					
+			//Send packet
+			var start = parseInt(startByte) || 0;
+            var stop = parseInt(endByte) || file.size - 1;
+            var reader = new FileReader();
+
+			// If we use onloadend, we need to check the readyState.
+			reader.onloadend = function(evt) {
+			if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+				//Get Packet for sending as a result of reader.onloadend = function(evt)
+				packet4Sending = evt.target.result;
+				var array4Sending = new Array();
+				array4Sending = packet4Sending.split("");
+				var newString = "";
+				var length = packet4Sending.length;
+				var crc = 0; //CRC 
+				for (i=0; i < length; i++) {
+					//Calculate CRC
+					crc = crc + packet4Sending.charCodeAt(i);
+					//create packet to be sent without headers, all the bytes should be escaped by "%"
+					newString = newString + "%" + complementToRequiredDigits(packet4Sending.charCodeAt(i).toString(16), 2);
+				}
+			    
+				//Complement to required digits number all the header bytes and CRC
+				var hexPacketNumber = (complementToRequiredDigits(packetNumber.toString(16), 2));
+				var hexBytesToBeSent = (complementToRequiredDigits(bytesToBeSent.toString(16), 2));
+				var hexCRC = complementToRequiredDigits(crc.toString(16), 4);
+				
+				document.getElementById('byte_range').textContent =   	['Read bytes: ', start , ' - ', stop , ' of ', file.size, ' byte file ;',  ' packet(s) were received; ', attempts, ' attempts ' ].join('')  ; 
+				
+				//Compile the whole packet to be sent
+				packet4Sending = 	"%24%" + hexPacketNumber + "%" + hexBytesToBeSent + "%" + hexCRC[0] + hexCRC[1] + "%" + hexCRC[2] + hexCRC[3] + newString;  
+				
+				//alert(packet4Sending);
+				//document.getElementById('byte_content').textContent = packet4Sending;
+				
+				//Send packet
+				comm_write(packet4Sending);
+				
+			}    
+			}//reader.onloadend = function(evt)
+			//cut the slice of file for sending
+			if (file.webkitSlice) {
+				var blob = file.webkitSlice(start, stop + 1);
+			} else if (file.mozSlice) {
+				var blob = file.mozSlice(start, stop + 1);
+			}
+			reader.readAsBinaryString(blob);
+			attempts++;
+	    }
+		else if (parseInt(avr_log_console) == packetNumber) {
+			//ACK
+			//Packet acknowledged, send next one
+			packetNumber++;
+			attempts = 0;
+		}
+		
+	}
+	else {
+		//Maximum attempts to send file
+		//No success
+		alert("Maximum attempts!");
+		window.clearTimeout(timerMulti);
+	}
+};
+
+function complementToRequiredDigits (data, digits) {
+	//Complement required data with "0" to required digits
+	//Bytes should be complemented to 2 digits because echo "%" 
+	//uses only 2 bytes not 1!!!
+	if ( data.length < digits ) {
+        return complementToRequiredDigits( "0" + data , digits );
+	}	
+	else {
+	    return data;
+	}
+};
+
+	/*
+	if (crc.toString(16).length == 1) {
+		tempString = "000" + crc.toString(16)    
+	}
+	else if (crc.toString(16).length == 2) {
+		tempString = "00" + crc.toString(16)
+	}			  
+	else if (crc.toString(16).length == 3) {
+		tempString = "0" + crc.toString(16)
+	}
+	else {
+		tempString = crc.toString(16);
+	}
+	//Complement up to 2 digits packetNumber and bytesToBeSent 
+	var stringPacketNumber = packetNumber.toString(16);
+	if (stringPacketNumber.length == 1) {
+		stringPacketNumber = "0" + stringPacketNumber;
+	}
+	var stringBytesToBeSent = bytesToBeSent.toString(16);
+	if (stringBytesToBeSent.length == 1) {
+		stringBytesToBeSent = "0" + stringBytesToBeSent;
+	}
+};
+ */
+function comm_write(data)	{
+	//Write data to AVR com port
+	action_zone.location='comm_write.cgi?port=0&baud=4098&bytes=133&data='+data
+}; 
+  
+</script>
+</body>
+</html>

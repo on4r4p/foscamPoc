@@ -1,0 +1,28 @@
+<head>
+<title>Show Content</title>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript"> 
+function contentDisp()
+{
+$.ajax({
+url : "includetxt.jsp",
+success : function (data) {
+$("#contentArea").html(data);
+}
+});
+}
+</script> 
+</head>
+<body>
+<table width="100%" border=0>
+<tr><td width="30%" >&nbsp;</td><td style="color:blue;" width="70%">
+Click below button to display content of the file</td></tr>
+<tr><td>&nbsp;</td><td ><input type="button" value="Click" onClick="contentDisp();">&nbsp;
+<span style="color:blue;"></span></td></tr>
+<tr><td>&nbsp;</td><td>
+<textarea id="contentArea" rows="10" cols="50"></textarea>
+</td>
+</tr>
+</table>
+</body>
+</html>

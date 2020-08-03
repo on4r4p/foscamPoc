@@ -1,0 +1,143 @@
+#!/bin/bash 
+#
+# Copyright 2013 Artem Harutyunyan, Sergey Shekyan
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+onexit()
+{
+    if [[ -n $PORT_CHANGED ]] && [[ -z $PROXY_INJECT_DONE ]]
+    then
+        red "Port has been changed. Need to change port back"
+        CODE=$($CURL -s -o /dev/null -w "%{http_code}" \
+        $ADDR/set_network.cgi'?user='$USERNAME'&pwd='$PASSWORD'&ip='$IP'&mask='$MASK'&dns='$DNS'&gateway='$GW'&port='$PORT_CHANGED
+        )
+        
+        [[ $CODE == 200 ]] || die "Could not restore port settings"
+        green "Successfully restored port setting"
+    fi
+}
+
+trap onexit EXIT
+
+# Load all the commands 
+for cmd in commands/*.sh; do
+    #echo sourcing $cmd
+    . $cmd 
+done
+
+usage()
+{
+cat << EOF
+A script for demonstrating the work of camtool utilities 
+Usage: $0 -c <cmd> [OPTIONS] 
+OPTIONS:
+    -c <cmd> command (availble commands are ${CMD_LIST[*]})
+    -a <addr> address of the camera 
+    -u <username> username for accessing the camera
+    -p <password> password for accessing the camera  
+    -e <exec> absolute path to executable file for injecting to the camera
+    -k <args> arguments with which the executable has to run 
+    -s <path> path to system firmware library folder 
+    -i <inject username> username to create on the camera
+    -l <inject password> password for the new username
+    -w <webui patch> absolute path to the Web UI patch file
+    -f <file> absolute path to the file for hosting on the camera
+    -o <new port> new port the camera firmware should listen on
+    -h display this message
+EOF
+}
+
+## Varaibles
+ADDR=
+USERNAME=
+PASSWORD=
+CMD=
+EXEC=
+SYS_FW_LIB=
+WEBUI_LIB=
+SET_USER_PARAM=
+SUFFIX=$(mktemp -u .XXXXXXXXXX)
+SETTINGS_FILE=/tmp/settings$SUFFIX
+EXT_SETTINGS_FILE=/tmp/ext_settings$SUFFIX
+NEW_SETTINGS_FILE=/tmp/new_settings$SUFFIX
+PORT_CHANGED=
+PROXY_INJECT_DONE=
+HOST_FILE=
+DONE=
+
+while getopts “hu:p:a:c:e:k:s:i:l:w:f:o:” OPTION
+do
+    case $OPTION in
+        h)
+            usage
+            exit 1
+            ;;
+        a)
+            ADDR=$OPTARG
+            ;;
+        u)
+            USERNAME=$OPTARG  
+            ;;
+        c)
+            CMD=$OPTARG
+            ;;
+        p)
+            PASSWORD=$OPTARG
+            ;;
+        e)
+            EXEC=$OPTARG
+             ;;
+        k)
+            ARG=$OPTARG
+            ;;
+        s)
+            SYS_FW_LIB=$OPTARG
+            ;;
+        i)
+            NEW_USER=$OPTARG
+            ;;
+        l)
+            NEW_PWD=$OPTARG
+            ;;
+        w)
+            WEBUI_PATCH=$OPTARG
+            ;;
+        f) 
+            HOST_FILE=$OPTARG
+            ;;
+        o)
+            NEW_PORT=$OPTARG
+            ;;
+        ?)
+            usage
+            exit
+            ;;
+    esac
+done
+
+if [[ -z $CMD ]]; then
+  usage
+  exit 1
+fi
+
+#run_inject_proxy
+
+for item in ${CMD_LIST[*]}; do    
+    if [[ "$item" == $CMD ]]; then
+        run_$CMD
+        exit 0
+    fi
+done
+die "Unknown command '$CMD'"
+

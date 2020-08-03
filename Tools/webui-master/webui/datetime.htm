@@ -1,0 +1,114 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="style.css" type="text/css">
+<title></title>
+<style>
+BODY {
+	MARGIN: 0px; BACKGROUND-COLOR: #848284; font: arial;
+}
+</style>
+</head>
+<script language="javascript">
+    document.write('<script src="get_params.cgi?user='+top.user+'&pwd='+top.pwd+'"><\/script>');
+</script>
+<script>
+if (alias=='') alias=top.str_anonymous;
+top.alias=alias;
+top.document.title=top.str_device+'('+alias+')';
+function ntp_svr_onchange()
+{
+	if (ntp_svr_sel.value=='...')
+		ntp_svr_inp.style.display='';
+	else
+	{
+		ntp_svr_inp.value=ntp_svr_sel.value;
+		ntp_svr_inp.style.display='none';
+	}
+}
+function ntp_enable_onclick()
+{
+	if (ntp_enable_chk.checked)
+	{
+		tr_ntp_svr.style.display='';
+		ntp_svr_onchange();
+	}
+	else
+	{
+		tr_ntp_svr.style.display='none';
+		ntp_svr_inp.style.display='none';
+	}
+}
+
+function tz_onchange()
+{
+    var t = new Date();
+    var timezone = t.getTimezoneOffset()/60;
+    t.setTime(t.getTime()-tz_sel.value*1000+timezone*3600*1000);
+	now_td.innerHTML = '&nbsp;&nbsp;' + t.toLocaleString();
+}
+
+function tz_onchange1()
+{
+    var t = new Date();
+    var timezone = t.getTimezoneOffset()/60;
+    t.setTime(t.getTime()-tz_sel.value*1000+timezone*3600*1000);
+	return '&nbsp;&nbsp;' + t.toLocaleString();
+}
+
+function body_onload()
+{
+	tz_sel.value=tz;
+    tz_onchange();
+	ntp_enable_chk.checked=ntp_enable;
+	ntp_svr_sel.value=ntp_svr;
+	if (ntp_svr_sel.value!=ntp_svr) ntp_svr_sel.value='...';
+	ntp_svr_inp.value=ntp_svr;
+	ntp_enable_onclick();
+}
+function set_syncwithpc()
+{
+	if (syncwithpc_enable.checked)
+	{
+		t=new Date();
+		tz_sel.value=t.getTimezoneOffset()*60;
+	}	
+	else
+	{
+		tz_sel.value=tz;
+	}
+}
+function set_datetime()
+{
+	var now=0;
+	if (syncwithpc_enable.checked)
+	{
+		t=new Date();
+		tz_sel.value=t.getTimezoneOffset()*60;
+		now=t.getTime()/1000;
+	}
+	var url='set_datetime.cgi?user='+top.user+'&pwd='+top.pwd+'&next_url=datetime.htm&ntp_svr='+ntp_svr_inp.value+'&tz='+tz_sel.value+'&ntp_enable=';
+	url+=ntp_enable_chk.checked?1:0;
+	if (now) url+='&now='+now;
+	location=url;
+}
+</script>	
+<body onLoad="body_onload()">
+<table width="640" height="480" ><tr><td class="v1 pad2 bc4"><table width="100%" class="v2 f14 mid01">
+	<tr height="25"><td colspan="2" class="h2 bc1 mid02"><strong><script>document.write(top.str_datetime_config);</script></strong></td></tr>
+	<tr height="25">
+	    <td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_device_clock_time);</script></td>
+	    <td id="now_td" class="mid02">&nbsp;&nbsp;	
+		    <script>
+                setInterval("now_td.innerHTML=tz_onchange1();",1000);
+            </script>
+        </td>
+    </tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_device_tz);</script></td><td class="mid02">&nbsp;&nbsp;<select id="tz_sel" class="s6"><script>document.write(top.str_tz_list);</script></select></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ntp_choice);</script></td><td class="v2 mid02">&nbsp;&nbsp;<input id="ntp_enable_chk" type="checkbox" onClick="ntp_enable_onclick()"></td></tr>
+	<tr id="tr_ntp_svr" height="25" style="display:none"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ntp_server);</script></td><td class="mid02">&nbsp;&nbsp;<select id="ntp_svr_sel" onChange="ntp_svr_onchange()"><option value="time.nist.gov">time.nist.gov</option><option value="time.kriss.re.kr">time.kriss.re.kr</option><option value="time.windows.com">time.windows.com</option><option value="time.nuri.net">time.nuri.net</option><option value="...">...</option></select>&nbsp;&nbsp;&nbsp;&nbsp;<input id="ntp_svr_inp" style="display:none" maxlength="64"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_syncwithpc);</script></td><td class="mid02">&nbsp;&nbsp;<input id="syncwithpc_enable" type="checkbox" onClick="set_syncwithpc()"></td></tr>
+	<tr height="25"><td class="h2 mid03" colspan="2"><button onClick="set_datetime()"><script>document.write(top.str_set);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="location.reload()"><script>document.write(top.str_refresh);</script></button></td></tr>
+</table></td></tr></table>
+</body>
+</html>

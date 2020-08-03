@@ -1,0 +1,56 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="style.css" type="text/css">
+<title></title>
+<style>
+body{
+  font: arial;
+}
+</style>
+</head>
+<script language="javascript">
+    document.write('<script src="get_misc.cgi?user='+top.user+'&pwd='+top.pwd+'"><\/script>');
+</script>
+<script>
+function show_preset_actions()
+{
+
+	tr_autocenter_enable.style.display=preset_disable.checked?'':'none';
+		
+	
+	
+}
+
+function set_ptz()
+{
+        parent.content.reboot_seconds=30;
+	url='set_misc.cgi?user='+top.user+'&pwd='+top.pwd+'&next_url=rebootme.htm&ptz_center_onstart='+(autocenter_enable.checked?1:0)+'&ptz_patrol_rate='+pt_speed.value+'&ptz_patrol_up_rate='+up_speed.value+'&ptz_patrol_down_rate='+down_speed.value+'&ptz_patrol_left_rate='+left_speed.value+'&ptz_patrol_right_rate='+right_speed.value+'&ptz_disable_preset='+(preset_disable.checked?1:0);
+	location=url;
+}
+function body_onload()
+{
+        preset_disable.checked = ptz_disable_preset?true:false;
+	autocenter_enable.checked=ptz_center_onstart?true:false;
+        tr_autocenter_enable.style.display=preset_disable.checked?'':'none';
+	pt_speed.value=ptz_patrol_rate;
+	up_speed.value=ptz_patrol_up_rate;
+	down_speed.value=ptz_patrol_down_rate;
+	left_speed.value=ptz_patrol_left_rate;
+	right_speed.value=ptz_patrol_right_rate;				
+}
+</script>	
+<body onLoad="body_onload()">
+<table width="640" height="480"><tr><td class="v1 pad2 bc4"><table width="100%" class="v2 f14 mid01">
+	<tr height="25"><td colspan="2" class="h2 bc1 mid02"><strong><script>document.write(top.str_ptz_config);</script></strong></td></tr>
+        <tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_presetdisable);</script></td><td class="mid02">&nbsp;&nbsp;<input type="checkbox" id="preset_disable" onClick="show_preset_actions()"></td></tr>
+	<tr id=tr_autocenter_enable height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_autocenter);</script></td><td class="mid02">&nbsp;&nbsp;<input type="checkbox" id="autocenter_enable"></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_pt_speed);</script></td><td class="mid02">&nbsp;&nbsp;<select id="pt_speed"><option value="0">0</option><option value="2">1</option><option value="4">2</option><option value="6">3</option><option value="8">4</option><option value="10">5</option><option value="12">6</option><option value="14">7</option><option value="16">8</option><option value="18">9</option><option value="20">10</option><option value="22">11</option><option value="24">12</option><option value="26">13</option><option value="28">14</option><option value="30">15</option></select></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_up_speed);</script></td><td class="mid02">&nbsp;&nbsp;<select id="up_speed"><option value="0">0</option><option value="2">1</option><option value="4">2</option><option value="6">3</option><option value="8">4</option><option value="10">5</option><option value="12">6</option><option value="14">7</option><option value="16">8</option><option value="18">9</option><option value="20">10</option><option value="22">11</option><option value="24">12</option><option value="26">13</option><option value="28">14</option><option value="30">15</option></select></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_down_speed);</script></td><td class="mid02">&nbsp;&nbsp;<select id="down_speed"><option value="0">0</option><option value="2">1</option><option value="4">2</option><option value="6">3</option><option value="8">4</option><option value="10">5</option><option value="12">6</option><option value="14">7</option><option value="16">8</option><option value="18">9</option><option value="20">10</option><option value="22">11</option><option value="24">12</option><option value="26">13</option><option value="28">14</option><option value="30">15</option></select></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_left_speed);</script></td><td class="mid02">&nbsp;&nbsp;<select id="left_speed"><option value="0">0</option><option value="2">1</option><option value="4">2</option><option value="6">3</option><option value="8">4</option><option value="10">5</option><option value="12">6</option><option value="14">7</option><option value="16">8</option><option value="18">9</option><option value="20">10</option><option value="22">11</option><option value="24">12</option><option value="26">13</option><option value="28">14</option><option value="30">15</option></select></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_right_speed);</script></td><td class="mid02">&nbsp;&nbsp;<select id="right_speed"><option value="8">4</option><option value="0">0</option><option value="2">1</option><option value="4">2</option><option value="6">3</option><option value="8">4</option><option value="10">5</option><option value="12">6</option><option value="14">7</option><option value="16">8</option><option value="18">9</option><option value="20">10</option><option value="22">11</option><option value="24">12</option><option value="26">13</option><option value="28">14</option><option value="30">15</option></select></td></tr>
+	<tr height="25"><td class="h2 mid03" colspan="2"><button onClick="set_ptz()"><script>document.write(top.str_set);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="location.reload()"><script>document.write(top.str_refresh);</script></button></td></tr>
+</table></td></tr></table>
+</body>
+</html>

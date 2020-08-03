@@ -1,0 +1,63 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="style.css" type="text/css">
+<title></title>
+<style>
+BODY {
+	MARGIN: 0px; BACKGROUND-COLOR: #848284; font: arial;
+}
+</style>
+</head>
+<script language="javascript">
+    document.write('<script src="get_params.cgi?user='+top.user+'&pwd='+top.pwd+'"><\/script>');
+</script>
+<script>
+if (alias=='') alias=top.str_anonymous;
+top.alias=alias;
+top.document.title=top.str_device+'('+alias+')';
+function auth_onclick()
+{
+	tr_user.style.display=auth.checked?'':'none';
+	tr_pwd.style.display=auth.checked?'':'none';
+}
+function body_onload()
+{
+	sender.value=mail_sender;
+	receiver1.value=mail_receiver1;
+	receiver2.value=mail_receiver2;
+	receiver3.value=mail_receiver3;
+	receiver4.value=mail_receiver4; 
+	smtp_port.value=(!mail_port)?25:mail_port;
+	svr.value=mail_svr;
+	user.value=mail_user;
+	pwd.value=mail_pwd;
+	auth.checked=(mail_user=='')?false:true;
+	mail_inet_ip_chk.checked=mail_inet_ip?true:false;
+	auth_onclick();
+}
+function set_mail()
+{
+	url='set_mail.cgi?cam_user='+top.user+'&cam_pwd='+top.pwd+'&next_url=mail.htm&sender='+sender.value+'&receiver1='+receiver1.value+'&receiver2='+receiver2.value+'&receiver3='+receiver3.value+'&receiver4='+receiver4.value+'&svr='+svr.value+'&port='+((smtp_port.value=='')?25:smtp_port.value)+'&mail_inet_ip='+(mail_inet_ip_chk.checked?1:0)+'&user='+(auth.checked?user.value:'')+'&pwd='+(auth.checked?pwd.value:'');
+	location=url;
+}
+</script>	
+<body onLoad="body_onload()">
+<table width="640" height="480" ><tr><td class="v1 pad2 bc4"><table width="100%" class="v2 f14 mid01">
+	<tr height="25"><td colspan="2" class="h2 bc1 mid02"><strong><script>document.write(top.str_mail_config);</script></strong></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_sender);</script></td><td class="mid02">&nbsp;&nbsp;<input id="sender" maxlength="64"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_receiver);</script> 1</td><td class="mid02">&nbsp;&nbsp;<input id="receiver1" maxlength="64"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_receiver);</script> 2</td><td class="mid02">&nbsp;&nbsp;<input id="receiver2" maxlength="64"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_receiver);</script> 3</td><td class="mid02">&nbsp;&nbsp;<input id="receiver3" maxlength="64"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_receiver);</script> 4</td><td class="mid02">&nbsp;&nbsp;<input id="receiver4" maxlength="64"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_smtp_svr);</script></td><td class="mid02">&nbsp;&nbsp;<input id="svr" maxlength="64"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_smtp_port);</script></td><td class="mid02">&nbsp;&nbsp;<input id="smtp_port" maxlength="5" onKeyUp="value=value.replace(/[^\d]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_smtp_auth);</script></td><td class="mid02">&nbsp;&nbsp;<input id="auth" type="checkbox" onClick="auth_onclick()"></td></tr>
+	<tr id="tr_user" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_smtp_user);</script></td><td class="mid02">&nbsp;&nbsp;<input id="user" maxlength="64"></td></tr>
+	<tr id="tr_pwd" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_smtp_pwd);</script></td><td class="mid02">&nbsp;&nbsp;<input id="pwd" type="password" maxlength="64"></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;</td><td class="f13 mid02">&nbsp;&nbsp;<button onClick="window.open('test_mail.htm').focus()"><script>document.write(top.str_test);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<script>document.write(top.str_test_info);</script></script></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_mail_inet_ip);</script></td><td class="mid02">&nbsp;&nbsp;<input id="mail_inet_ip_chk" type="checkbox"></td></tr>
+	<tr height="25"><td class="h2 mid03" colspan="2"><button onClick="set_mail()"><script>document.write(top.str_set);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="location.reload()"><script>document.write(top.str_refresh);</script></button></td></tr>
+</table></td></tr></table>
+</body>
+</html>

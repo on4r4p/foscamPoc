@@ -1,0 +1,111 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="style.css" type="text/css">
+<title></title>
+<style>
+BODY {
+	MARGIN: 0px; BACKGROUND-COLOR: #848284; font: arial;
+}
+</style>
+</head>
+<script language="javascript">
+    document.write('<script src="get_params.cgi?user='+top.user+'&pwd='+top.pwd+'"><\/script>');
+</script>
+<script>
+if (alias=='') alias=top.str_anonymous;
+top.alias=alias;
+top.document.title=top.str_device+'('+alias+')';
+function service_onchanged()
+{
+	tr_user.style.display='none';
+	tr_pwd.style.display='none';
+	tr_host.style.display='none';
+	tr_svr.style.display='none';
+	tr_port.style.display='none';
+	tr_restart_dyndns.style.display='none';
+	if ((service.value==1)||(service.value==8)||(service.value==9))
+	{
+		tr_user.style.display='';
+		tr_pwd.style.display='';
+		tr_host.style.display='';
+	}
+	else if ((service.value>1)&&(service.value<5))
+	{
+		tr_user.style.display='';
+		tr_pwd.style.display='';
+		tr_host.style.display='';
+		tr_restart_dyndns.style.display='';
+		tr_svr.style.display='none';
+		tr_port.style.display='none';
+	}
+	else if ((service.value==5)||(service.value==7))
+	{
+		tr_user.style.display='';
+		tr_pwd.style.display='';
+		tr_svr.style.display='none';
+		tr_port.style.display='none'
+	}
+	else if (service.value==6)
+	{
+		tr_svr.style.display='none';
+		tr_port.style.display='none'
+	}
+}
+function body_onload()
+{
+	service.value=ddns_service;
+	svr.value=ddns_proxy_svr;
+	host.value=ddns_host;
+	user.value=ddns_user;
+	pwd.value=ddns_pwd;
+	port_inp.value=(ddns_proxy_port==0)?'':ddns_proxy_port;
+	service_onchanged();
+}
+function set_ddns()
+{
+	parent.content.reboot_seconds=30;
+	url='set_ddns.cgi?next_url=rebootme.htm&cam_user='+top.user+'&cam_pwd='+top.pwd+'&service='+service.value;
+	if ((service.value<2)||(service.value>4)) restart_dyndns.checked=false;
+	if ((service.value==1)||(service.value==8)||(service.value==9))
+	{
+		svr.value='';
+		port_inp.value='';
+	}
+	else if ((service.value==5)||(service.value==7))
+	{
+		host.value='';
+	}
+	else if (service.value==6)
+	{
+		host.value='';
+		user.value='';
+		pwd.value='';
+	}
+	else if (service.value==0)
+	{
+		svr.value='';
+		host.value=''; 	
+		user.value='';
+		pwd.value='';
+		port_inp.value='';
+	}
+	url+='&user='+user.value+'&pwd='+pwd.value+'&host='+host.value+'&proxy_svr='+svr.value+'&proxy_port='+(port_inp.value==''?0:port_inp.value);
+	if (restart_dyndns.checked) url+='&restart_dyndns=1';
+	location=url;
+}
+</script>	
+<body onLoad="body_onload()">
+<table width="640" height="480" ><tr><td class="v1 pad2 bc4"><table width="100%" class="v2 f14 mid01">
+	<tr height="25"><td colspan="2" class="h2 bc1 mid02"><strong><script>document.write(top.str_ddns_config);</script></strong></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_ddns_service);</script></td><td class="mid02">&nbsp;&nbsp;<select id="service" onChange="service_onchanged()"><script>document.write(top.str_ddns_service_list);</script></select></td></tr>
+	<tr id="tr_user" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ddns_user);</script></td><td class="mid02">&nbsp;&nbsp;<input id="user" maxlength="64"></td></tr>
+	<tr id="tr_pwd" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ddns_pwd);</script></td><td class="mid02">&nbsp;&nbsp;<input id="pwd" type="password" maxlength="64"></td></tr>
+	<tr id="tr_host" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ddns_host);</script></td><td class="mid02">&nbsp;&nbsp;<input id="host" maxlength="64"></td></tr>
+	<tr id="tr_svr" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_proxy_svr);</script></td><td class="mid02">&nbsp;&nbsp;<input id="svr" maxlength="64"></td></tr>
+	<tr id="tr_port" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_proxy_port);</script></td><td class="mid02">&nbsp;&nbsp;<input id="port_inp" maxlength="5" onKeyUp="value=value.replace(/[^\d]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))"></td></tr>
+	<tr id="tr_restart_dyndns" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_restart_dyndns);</script></td><td class="f13 mid02">&nbsp;&nbsp;<input id="restart_dyndns" type="checkbox">&nbsp;&nbsp;<script>document.write(top.str_restart_dyndns_comment);</script></td></tr>
+	<tr height="25"><td class="h2 mid03" colspan="2"><button onClick="set_ddns()"><script>document.write(top.str_set);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="location.reload()"><script>document.write(top.str_refresh);</script></button></td></tr>
+</table></td></tr></table>
+</body>
+</html>

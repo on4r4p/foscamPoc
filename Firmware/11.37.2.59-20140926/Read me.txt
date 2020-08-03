@@ -1,0 +1,12 @@
+Suitable for MJPG indoor PT camera: FI8910W FI8910E FI8916W FI8918W FI8918E Pan/Tilt network camera.
+
+Please confirm the model number and firmware version before upgrading.
+11.22.2.xx cannot upgrade to this version,
+11.37.2.xx can upgrade to this version.
+
+System firmware version: 11.37.2.59
+Web UI version: 2.4.10.11
+
+
+Improvements:
+1) Fix the problem that certificate of the plug-in is expired.

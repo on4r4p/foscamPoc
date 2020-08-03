@@ -1,0 +1,160 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title></title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<style>
+BODY {
+	MARGIN: 0px; BACKGROUND-COLOR: #848284;  font: arial;
+}
+</style>
+</head>
+<script language = "javascript">
+
+function user_onkeypress()
+{
+	if (window.event.keyCode==13)
+		pwd.focus();
+}
+function pwd_onkeypress() 
+{
+	if (window.event.keyCode==13)
+		monitor_link.focus();
+}
+function set_language(language)
+{
+	top.setcookie('language',language,720);
+	top.location.reload();//reload index.html
+}
+function monitor()
+{
+	top.user=user.value;	
+	top.pwd=pwd.value;	
+	top.browser = 0;
+	location='monitor.htm';
+}
+
+</script>
+
+<body>
+<table border=0 cellpadding=0 cellspacing=0 width=745 bgColor=#ffffff height=500 background=./images/loginbg.JPG align="center">
+    <tr height = 80>
+        <td>
+            <table border=0 cellpadding=0 cellspacing=0 width=745 align="center">
+                <tr height =70>
+                    <td style="width: 515px" ><font face="Arial" color="#FFFFFF" size="5px">&nbsp;&nbsp;Real-time&nbsp;IP&nbsp;Camera&nbsp;Monitoring&nbsp;System</font></td>
+                    <td ></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr height = 20>
+        <td>
+            <table border=0 cellpadding=0 cellspacing=0 width=745 align="center">
+                <tr height = 20>
+                    <td style="width: 55px"><strong>&nbsp;&nbsp;&nbsp;<font><a id = english href = "javascript:set_language('english');" style="font-size:12px;color:#FF0000;"><script>document.write("English")</script></a></strong></td>
+                    <td style="width: 50px"><strong>&nbsp;<font><a id = spanish href = "javascript:set_language('spanish');" style="font-size:12px;color:#FF0000;"><script>document.write("Spanish")</script></a></strong></td>
+                    <td style="width: 50px"><strong>&nbsp;<font><a id = Deutsch href = "javascript:set_language('Deutsch');" style="font-size:12px;color:#FF0000;"><script>document.write("Deutsch")</script></a></strong></td>                    
+                    <td style="width: 50px"><strong>&nbsp;<font><a id = french href = "javascript:set_language('french');" style="font-size:12px;color:#FF0000;"><script>document.write("French")</script></a></strong></td>
+                    <td style="width: 50px"><strong>&nbsp;<font><a id = Italian href = "javascript:set_language('Italian');" style="font-size:12px;color:#FF0000;"><script>document.write("Italian")</script></a></strong></td>
+              
+                    <td style="width: 50px"><strong>&nbsp;<font><a id = Polski href = "javascript:set_language('Polski');" style="font-size:12px;color:#FF0000;"><script>document.write("Polski")</script></a></strong></td>
+                    <td style="width: 65px"><strong>&nbsp;<font><a id = simple_chinese href = "javascript:set_language('simple_chinese');" style="font-size:12px;color:#FF0000;"><script>document.write("简体中文")</script></a></strong></td>               
+                    <td style="width: 65px"><strong>&nbsp;<font><a id = traditional_chinese href = "javascript:set_language('traditional_chinese');" style="font-size:12px;color:#FF0000;"><script>document.write("繁体中文")</script></a></strong></td>
+                    <td style="width: 293px"></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td  height =20></td>
+    <tr>
+    <tr height = 30>
+        <td>
+            <table border=0 cellpadding=0 cellspacing=0 width=745 align="center">
+                <tr height = 30>
+                    <td style="width: 60px"><td>
+                    <td style="font-size:18px; "><strong>&nbsp;&nbsp;&nbsp;&nbsp;<script>document.write(top.str_mode_activex);</script></strong></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr height =120>
+        <td>
+            <table border=0 cellpadding=0 cellspacing=0 width=745 align="center">	
+                <tr height="40">
+                    <td style="width: 60px;"></td>
+                    <td style="width: 130px">
+                        <table border=0 cellpadding=0 cellspacing=0 width=122 height=31 bgColor=#ffffff background=./images/userpwd.jpg align="left"> 
+	                        <td style="font-size:17px; color:#0000CD; width: 120px;"><strong>&nbsp;&nbsp;<font face="Times New Roman"><script language="javascript">document.write(top.str_user);</script></font></strong></td>
+                        </table>                       
+                    </td>
+	                <td style="height: 40px"><INPUT id=user name=user maxLength=32 LANGUAGE=javascript onKeyPress="return user_onkeypress()" style="width: 140px"></td>
+                </tr>
+                <tr height="40">
+                    <td style="width: 60px"></td>
+                    <td style="width: 130px">
+                        <table border=0 cellpadding=0 cellspacing=0 width=122 height=31 bgColor=#ffffff background=./images/userpwd.jpg align="left"> 
+                            <td style="font-size:17px; color:#0000CD; width: 120px;"><strong>&nbsp;&nbsp;<font face="Times New Roman"><script language="javascript">document.write(top.str_pwd);</script></font></strong></td>
+                        </table>                       
+                    </td>
+	                <td><INPUT id=pwd name=pwd type = "password" maxLength=32 LANGUAGE=javascript onKeyPress="return pwd_onkeypress()" style="width: 140px"></td>
+	            </tr>
+	            <tr height="40">
+	                <td style="width: 60px"></td>
+	                <td >
+                        <table border=0 cellpadding=0 cellspacing=0 width=93 height=31 bgColor=#ffffff background=./images/button.jpg align=left> 
+	                        <td><strong>&nbsp;<font><a id = monitor_link href = "javascript:monitor()" class="f18"><script>document.write(top.str_signin);</script></a></strong></td>
+                        </table>                       
+                    </td>
+	            </tr>
+	        </table>
+	    </td>
+	</tr>	
+	<tr>
+	    <td  height =10></td>
+	<tr>	
+	<tr height =150 width=745 >
+	    <td>
+	        <table border=0 cellpadding=0 cellspacing=0 width=745>
+	        	<tr height="40">
+	                <td width=60></td>
+	                <td style="font-size:18px;"><strong>&nbsp;&nbsp;&nbsp;&nbsp;<script>document.write(top.str_mode_serverpush);</script></strong></td>
+	            </tr>
+	            <tr height="40">
+	                <td width=60></td>
+	                <td>
+                        <table border=0 cellpadding=0 cellspacing=0 width=93 height=31 bgColor=#ffffff background=./images/button.jpg align="left"> 
+	                        <td><strong>&nbsp;<a href="serverpush.htm" class="f18"><script>document.write(top.str_signin);</script></a></strong></td>
+                        </table>                       
+                    </td>
+	            </tr>
+	            <tr>
+	                <td  height =30></td>
+	            <tr>
+	            <tr height=20>
+	                <td width=60></td>
+	                <td>
+                        <table border=0 cellpadding=0 cellspacing=0 width=100 height=31 bgColor=#ffffff background=./images/attrion.jpg align="left"> 
+	            				<td height = 20 style="font-size:12px;"><strong>&nbsp;&nbsp;&nbsp;&nbsp;<font face="Times New Roman"><script language="javascript">document.write(top.str_attention);</script></font></strong></td>
+                        </table>                       
+                    </td>
+	            </tr>
+				<tr height=20>
+				    <td width=60></td>
+				    <td height = 20 style="font-size:12px;"><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font face="Times New Roman"><script language="javascript">document.write(top.str_attention1);</script></font></strong></td>
+			    </tr>
+				<tr height=20>
+				    <td width=60></td>
+				    <td height = 20 style="font-size:12px;"><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font face="Times New Roman"><script language="javascript">document.write(top.str_attention2);</script></font></strong></td>
+	            </tr>
+	        </table>
+	    </td>
+	</tr>
+	<tr>
+	    <td  height =35></td>
+	<tr>
+</table>
+
+</body>
+</html>

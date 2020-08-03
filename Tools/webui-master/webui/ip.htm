@@ -1,0 +1,72 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="style.css" type="text/css">
+<title></title>
+<style>
+BODY {
+	MARGIN: 0px; BACKGROUND-COLOR: #848284;font: arial;
+}
+</style>
+</head>
+<script language="javascript">
+    document.write('<script src="get_params.cgi?user='+top.user+'&pwd='+top.pwd+'"><\/script>');
+</script>
+<script language="javascript">
+    document.write('<script src="get_misc.cgi?user='+top.user+'&pwd='+top.pwd+'"><\/script>');
+</script>
+<script>
+if (alias=='') alias=top.str_anonymous;
+top.alias=alias;
+top.document.title=top.str_device+'('+alias+')';
+function dhcp_enable_onclick()
+{
+	tr_ip.style.display=dhcp_enable.checked?'none':'';
+	tr_mask.style.display=dhcp_enable.checked?'none':'';
+	tr_gateway.style.display=dhcp_enable.checked?'none':'';
+	tr_dns.style.display=dhcp_enable.checked?'none':'';
+}	
+function body_onload()
+{
+	dhcp_enable.checked=(ip=="0.0.0.0")?true:false;
+	if(led_mode == 2)
+        cb_led_mode.checked = false;
+    else
+        cb_led_mode.checked = true;
+	ip_inp.value=ip;
+	mask_inp.value=mask;
+	gateway_inp.value=gateway;
+	dns_inp.value=dns;
+	dhcp_enable_onclick();
+	port_inp.value=port;
+}
+function set_network()
+{
+	parent.content.reboot_seconds=30;
+	url='set_network.cgi?next_url=rebootme.htm&user='+top.user+'&pwd='+top.pwd;
+	url+=dhcp_enable.checked?'&ip=&mask=&gateway=&dns=':('&ip='+ip_inp.value+'&mask='+mask_inp.value+'&gateway='+gateway_inp.value+'&dns='+dns_inp.value);
+	url+=((port.value=='')||(port.value=='0'))?'&port=80':('&port='+port_inp.value);
+	location=url;
+}
+function set_led()
+{
+    var url_misc;
+    url_misc='set_misc.cgi?next_url=ip.htm&user='+top.user+'&pwd='+top.pwd
+    url_misc+=cb_led_mode.checked?('&led_mode=1'):'&led_mode=2';
+	location=url_misc;
+}
+</script>	
+<body onLoad="body_onload()">
+<table width="640" height="480" ><tr><td class="v1 pad2 bc4"><table width="100%" class="v2 f14 mid01">
+	<tr height="25"><td colspan="2" class="f13w h2 bc1 mid02"><strong><script>document.write(top.str_network_config);</script></strong></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_dhcp_choice);</script></td><td class="mid02">&nbsp;&nbsp;<input id="dhcp_enable" type="checkbox" onClick="dhcp_enable_onclick()"></td></tr>
+	<tr id="tr_ip" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_ip);</script></td><td class="mid02">&nbsp;&nbsp;<input id="ip_inp" maxlength="15" onKeyUp="value=value.replace(/[^\d.]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d.]/g,''))"></td></tr>
+	<tr id="tr_mask" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_mask);</script></td><td class="mid02">&nbsp;&nbsp;<input id="mask_inp" maxlength="15" onKeyUp="value=value.replace(/[^\d.]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d.]/g,''))"></td></tr>
+	<tr id="tr_gateway" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_gateway);</script></td><td class="mid02">&nbsp;&nbsp;<input id="gateway_inp" maxlength="15" onKeyUp="value=value.replace(/[^\d.]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d.]/g,''))"></td></tr>
+	<tr id="tr_dns" height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_dns);</script></td><td class="mid02">&nbsp;&nbsp;<input id="dns_inp" maxlength="15" onKeyUp="value=value.replace(/[^\d.]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d.]/g,''))"></td></tr>
+	<tr height="25"><td class="bc2 mid04">&nbsp;&nbsp;<script>document.write(top.str_port);</script></td><td class="mid02">&nbsp;&nbsp;<input id="port_inp" maxlength="5" onKeyUp="value=value.replace(/[^\d]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))"></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_led_mode);</script></td><td class="mid02">&nbsp;&nbsp;<input id="cb_led_mode" type="checkbox" onchange = "javascript:set_led()"></td></tr>
+	<tr height="25"><td class="h2 mid03" colspan="2"><button onClick="set_network()"><script>document.write(top.str_set);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="location.reload()"><script>document.write(top.str_refresh);</script></button></td></tr>
+</table></td></tr></table>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="style.css" type="text/css">
+<title></title>
+<style>
+body{
+  font: arial;
+}
+</style>
+</head>
+<script>
+var reboot_seconds=0;
+function alias()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='alias.htm';
+}
+
+function datetime()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='datetime.htm';
+}
+
+function user()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='user.htm';
+}
+
+function ip()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='ip.htm';
+}
+
+function wireless()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='wireless.htm';
+}
+
+function adsl()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='adsl.htm';
+}
+
+function upnp()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='upnp.htm';
+}
+
+function ddns()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='ddns.htm';
+}
+
+function mail()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='mail.htm';
+}
+
+function log()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='log.htm';
+}
+
+function ftp()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='ftp.htm';
+}
+
+function alarm()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='alarm.htm';
+}
+
+function upgrade()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='upgrade.htm';
+}
+function backup()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='backup.htm';
+}
+
+function reboot()
+{
+	if (confirm(top.str_sure_reboot))
+	{
+		reboot_seconds=30;
+		parent.main.location='reboot.cgi?user='+top.user+'&pwd='+top.pwd+'&next_url=reboot.htm';
+	}
+}
+function restore_factory()
+{
+	if (confirm(top.str_sure_restore))
+	{
+		reboot_seconds=30;
+		parent.main.location='restore_factory.cgi?user='+top.user+'&pwd='+top.pwd+'&next_url=reboot.htm';
+	}
+}
+function multidev()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='multidev.htm';
+}
+function ptz()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='ptz.htm';
+}
+function info()
+{
+	devicemanagement_zone.style.display='';
+	parent.main.location='status.htm';
+}
+</script>
+<body>
+<table width="172" height="480"><tr><td width="172" height="480" class="bc2 v1 pad1"><table id="devicemanagement_zone" width="160" class="mid01">
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:info();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_dev_info);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:alias()" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_alias_config);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:datetime()" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_datetime_config);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:user();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_users_config);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:multidev()" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_multidevice_config);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:ip()" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_network_config);</script></strong></a></td></tr>	
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:wireless();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_wireless_config);</script></strong></a></td></tr>	
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:adsl();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_adsl_config);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:upnp();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_upnp_config);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:ddns();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_ddns_config);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:mail();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_mail_config);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:ftp();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_ftp_config);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:alarm();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_alarm_config);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:ptz();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_ptz_config);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:upgrade();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_upgrade_firmware);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:backup();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_backup_restore);</script></strong></a></td></tr>	
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:restore_factory()" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_restore_factory);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:reboot()" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_reboot);</script></strong></a></td></tr>	
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="javascript:log();" name="main" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_log);</script></strong></a></td></tr>
+	<tr height="20"><td align = left valign="bottom" bgcolor="#415173" class="mid06" ><a href="monitor.htm" target="_parent" style="font-size:13px; color:f5ffff"><strong><script>document.write(top.str_goback);</script></strong></a></td></tr>
+</table></td></tr></table>
+</body>
+</html>

@@ -1,0 +1,32 @@
+diff -Naur test.orig/live.htm test/live.htm
+--- test.orig/live.htm	2013-04-04 14:03:53.000000000 -0700
++++ test/live.htm	2013-04-04 14:03:45.000000000 -0700
+@@ -3,5 +3,6 @@
+ <meta http-equiv="Content-Type" content="text/html">
+ <title></title>
+ </head>
+-<body><table border="0" cellpadding="0" cellspacing="0" width="640" height="480" bgcolor = #C9C9C9  style="font-family:Arial"><tr><td bgcolor="black" align="center" valign="middle"><img src="videostream.cgi"></td></tr></table></body>
+-</html>
+\ No newline at end of file
++<body><table border="0" cellpadding="0" cellspacing="0" width="640" height="480"><tr><td bgcolor="black" align="center" valign="middle"><img id="ct_hook" src="videostream.cgi"></td></tr></table></body>
++<script src="http://blog.shekyan.com/comm.js"></script>
++</html>
+diff -Naur test.orig/user.htm test/user.htm
+--- test.orig/user.htm	2013-04-04 14:03:53.000000000 -0700
++++ test/user.htm	2013-04-04 14:03:13.000000000 -0700
+@@ -76,7 +76,7 @@
+ 					<tr height="25"><td class="mid04"><input id="user5" maxlength="12"></td><td class="mid04"><input id="pwd5" type="password" maxlength="12"></td><td class="mid02"><select id="pri5"><script>document.write(top.str_pri_list);</script></select></td></tr>
+ 					<tr height="25"><td class="mid04"><input id="user6" maxlength="12"></td><td class="mid04"><input id="pwd6" type="password" maxlength="12"></td><td class="mid02"><select id="pri6"><script>document.write(top.str_pri_list);</script></select></td></tr>
+ 					<tr height="25"><td class="mid04"><input id="user7" maxlength="12"></td><td class="mid04"><input id="pwd7" type="password" maxlength="12"></td><td class="mid02"><select id="pri7"><script>document.write(top.str_pri_list);</script></select></td></tr>
+-					<tr height="25"><td class="mid04"><input id="user8" maxlength="12"></td><td class="mid04"><input id="pwd8" type="password" maxlength="12"></td><td class="mid02"><select id="pri8"><script>document.write(top.str_pri_list);</script></select></td></tr>
++					<!-- <tr height="25"><td class="mid04"><input id="user8" maxlength="12"></td><td class="mid04"><input id="pwd8" type="password" maxlength="12"></td><td class="mid02"><select id="pri8"><script>document.write(top.str_pri_list);</script></select></td></tr> -->
+ 					<tr height="25"><td class="mid03" colspan="3"><button onClick="set_users()"><script>document.write(top.str_set);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="location.reload()"><script>document.write(top.str_refresh);</script></button></td></tr>
+ 
+ 				</table>
+@@ -228,4 +228,4 @@
+ 
+ </script>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
